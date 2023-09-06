@@ -4,6 +4,12 @@
     <Title>
       Base IntegrationEvent for EventBus.
     </Title>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Description>
+      Base IntegrationEvent for all application types.
+      Typicaly use with Tsw.EventBus.Common.
+    </Description>
+    <PackageTags>IntegrationEvent; EventBus</PackageTags>
   </PropertyGroup>
 
 </Project>
