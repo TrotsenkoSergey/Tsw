@@ -2,8 +2,8 @@
 
   <!--Common package configuration (special config into .csproj files)-->
   <PropertyGroup>
-    <PackageId>$(MSBuildProjectName.Replace(" ", "_"))</PackageId>
-    <Authors>Sergey Trotsenko</Authors>
+    <PackageId>Tsw.$(MSBuildProjectName.Replace(" ", "_"))</PackageId>
+    <Authors>Microsoft, Sergey Trotsenko</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <!--we dont need bellow 2 lines if we link to git repository-->

@@ -1,11 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-
+    <Title>
+      Abstraction EventBus services (Subscribe, Publish, Handle event) 
+      and subscription manager.
+    </Title>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Description>
+      Base IEventBus service with Publish and Subscribe functions.
+      IEventHandler abstraction services (with dynamic support).
+      Also EventBusSubscriptionManager with impl.
+      Typicaly use with Tsw.EventBus.RabbitMQ.
+    </Description>
+    <PackageTags>EventBus; SubscriptionManager; IntegrationEventHandler; Publish; Subscribe</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventBus.IntegrationEvents\EventBus.IntegrationEvents.csproj" />
+    <PackageReference Include="Tsw.EventBus.IntegrationEvents" />
   </ItemGroup>
 
 </Project>
