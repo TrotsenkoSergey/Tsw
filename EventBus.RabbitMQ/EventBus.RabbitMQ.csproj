@@ -1,11 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-
+    <Title>
+      RabbitMQ connection and pub sub services.
+    </Title>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Description>
+      RabbitMQ connection, with pub sub services and logging.
+    </Description>
+    <PackageTags>EventBus; Publish; Subscribe; RabbitMQ</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventBus.Common\EventBus.Common.csproj" />
+    <PackageReference Include="Tsw.EventBus.Common" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="RabbitMQ.Client" />
   </ItemGroup>
 
 </Project>
