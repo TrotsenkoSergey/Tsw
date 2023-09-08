@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <Title>
-      RabbitMQ connection and pub sub services.
+      RabbitMQ EventBus implementation.
     </Title>
     <PackageVersion>1.0.0</PackageVersion>
     <Description>
-      RabbitMQ connection, with pub sub services and logging.
+      Connection with RabbitMQ and pub sub services, logging.
     </Description>
     <PackageTags>EventBus; Publish; Subscribe; RabbitMQ</PackageTags>
   </PropertyGroup>

@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus.Outbox", "EventBus.Outbox\EventBus.Outbox.csproj", "{AC69C3AB-C076-4103-9487-9D3F614262C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{247E3668-CEF4-4001-8370-9259D3259C5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{247E3668-CEF4-4001-8370-9259D3259C5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{247E3668-CEF4-4001-8370-9259D3259C5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC69C3AB-C076-4103-9487-9D3F614262C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC69C3AB-C076-4103-9487-9D3F614262C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC69C3AB-C076-4103-9487-9D3F614262C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC69C3AB-C076-4103-9487-9D3F614262C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
