@@ -17,12 +17,12 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
   }
 
   public virtual async Task AddAndSaveEventAsync(
-    IntegrationEvent @event, IDbContextTransaction currentTransaction)
+    IntegrationEvent @event, Transaction transaction)
   {
     _logger.LogInformation(
       "Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", @event.Id, @event);
 
-    await _eventLogService.SaveEventAsync(@event, currentTransaction);
+    await _eventLogService.SaveEventAsync(@event, transaction);
   }
 
   public virtual async Task PublishEventsThroughEventBusAsync(Guid transactionId)

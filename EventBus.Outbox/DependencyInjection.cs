@@ -15,7 +15,13 @@ public static class DependencyInjection
     string assemblyFullNameWhereIntegrationEventsStore)
   {
     services.AddDbContext<IntegrationEventLogContext>(
-      options => options.UseNpgsql(connectionString));
+      options => options.UseNpgsql(
+        connectionString, 
+        opt => opt.EnableRetryOnFailure(
+          maxRetryCount: 15, 
+          maxRetryDelay: TimeSpan.FromSeconds(30), 
+          errorCodesToAdd: null)
+        ));
 
     services.AddIntegrationEventServices(assemblyFullNameWhereIntegrationEventsStore);
 
@@ -44,13 +50,13 @@ public static class DependencyInjection
   private static IServiceCollection AddIntegrationEventServices(
     this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore) 
   {
-    services.AddScoped<IIntegrationEventLogService>(sp =>
+    services.AddTransient<IIntegrationEventLogService>(sp =>
     {
       var context = sp.GetRequiredService<IntegrationEventLogContext>();
       return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
     });
 
-    services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
+    services.AddTransient<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
 
     return services;
   }

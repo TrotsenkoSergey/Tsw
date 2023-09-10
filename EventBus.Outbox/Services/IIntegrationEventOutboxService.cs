@@ -3,5 +3,5 @@
 public interface IIntegrationEventOutboxService
 {
   Task PublishEventsThroughEventBusAsync(Guid transactionId);
-  Task AddAndSaveEventAsync(IntegrationEvent evt, IDbContextTransaction currentTransaction);
+  Task AddAndSaveEventAsync(IntegrationEvent evt, Transaction currentTransaction);
 }
