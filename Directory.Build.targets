@@ -4,6 +4,7 @@
   <PropertyGroup>
     <PackageId>Tsw.$(MSBuildProjectName.Replace(" ", "_"))</PackageId>
     <Authors>Microsoft, Sergey Trotsenko</Authors>
+    <PackageProjectUrl>https://github.com/TrotsenkoSergey/Tsw</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <!--we dont need bellow 2 lines if we link to git repository-->
