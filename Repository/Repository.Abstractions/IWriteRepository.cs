@@ -1,7 +1,7 @@
 ﻿namespace Tsw.Repository.Abstractions;
 
-public interface IWriteRepository<TEntity>
-    where TEntity : class
+public interface IWriteRepository<TEntity, TId>
+  where TEntity : IIdentifiable<TId>
 {
   TEntity Add(TEntity entity);
 

@@ -7,10 +7,10 @@ using Tsw.Repository.Abstractions;
 
 namespace Tsw.Repository.EFCore;
 
-public class Repository<TDbContext, TEntity> :
-  IRepository<TEntity>, IUnitOfWork<IDbContextTransaction>, IDisposable
+public class Repository<TDbContext, TEntity, TId> :
+  IRepository<TEntity, TId>, IUnitOfWork<IDbContextTransaction>, IDisposable
   where TDbContext : DbContext
-  where TEntity : class
+  where TEntity : class, IIdentifiable<TId>
 {
   protected readonly TDbContext _context;
   protected readonly string? _sharedEntityName;
@@ -29,12 +29,44 @@ public class Repository<TDbContext, TEntity> :
     bool noTracking,
     CancellationToken ct)
   {
-    var query = GetQuery(noTracking);
-    query = specification.ApplyToTable(query); // order is important!
-    query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
-    query = specification.ThenIncludes.Aggregate(query, (current, include) => current.Include(include));
+    IQueryable<TEntity> query = GetQueryWithCondition(specification, noTracking);
     return query.ToListAsync(ct);
   }
+
+  private IQueryable<TEntity> GetQueryWithCondition(
+    Specification<TEntity> specification,
+    bool noTracking,
+    Pagination? pagination = default)
+  {
+    IQueryable<TEntity> query = GetQuery(noTracking);
+    query = specification.ApplyToTable(query); // order is important!
+
+    if (pagination is not null)
+    {
+      query = query.OrderBy(x => x.Id)
+                   .Skip(pagination.Skip)
+                   .Take(pagination.Take);
+    }
+
+    query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
+    query = specification.ThenIncludes.Aggregate(query, (current, include) => current.Include(include));
+    return query;
+  }
+
+  public virtual async Task<PaginationResult<TEntity>> FindPagedAsync(
+        Specification<TEntity> specification,
+        Pagination pagination,
+        bool noTracking,
+        CancellationToken ct)
+  {
+    int totalCount = await GetQuery(noTracking).CountAsync(ct);
+    IQueryable<TEntity> query = GetQueryWithCondition(specification, noTracking, pagination);
+    List<TEntity> entities = await query.ToListAsync(ct);
+    return new PaginationResult<TEntity>(totalCount, entities);
+  }
+
+  public virtual Task<bool> AnyAsync(CancellationToken ct = default) =>
+    GetQuery().AnyAsync(ct);
 
   public virtual TEntity Add(TEntity entity) =>
     DbSet.Add(entity).Entity;
