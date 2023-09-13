@@ -9,11 +9,11 @@
     <!--All-->
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1"/>
 
-    <!--Common-->
+    <!--EventBus.Common-->
     <PackageVersion Include="MediatR" Version="12.0.1" />
     <PackageVersion Include="Tsw.EventBus.IntegrationEvents" Version="1.0.0"/><!--package from this library-->
 
-    <!--RabbitMQ-->
+    <!--EventBus.RabbitMQ-->
     <PackageVersion Include="Tsw.EventBus.Common" Version="1.0.0"/><!--package from this library-->
     <PackageVersion Include="Autofac" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
@@ -21,11 +21,14 @@
     <PackageVersion Include="Polly" Version="7.2.3" />
     <PackageVersion Include="RabbitMQ.Client" Version="6.5.0" />
 
-    <!--Outbox-->
+    <!--EventBus.Outbox-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.5" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5" />
+
+    <!--Repository.EFcore-->
+    <PackageVersion Include="Tsw.Repository.Abstractions" Version="1.0.2"/><!--package from this library-->
   </ItemGroup>
 
 </Project>

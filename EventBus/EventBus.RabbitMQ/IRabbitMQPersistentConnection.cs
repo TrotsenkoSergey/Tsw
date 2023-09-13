@@ -3,9 +3,9 @@
 public interface IRabbitMQPersistentConnection
     : IDisposable
 {
-    bool IsConnected { get; }
+  bool IsConnected { get; }
 
-    bool TryConnect();
+  bool TryConnect();
 
-    IModel CreateModel();
+  IModel CreateModel();
 }

@@ -37,7 +37,7 @@ public class IntegrationEventLog
   public IntegrationEventLog DeserializeJsonContent(Type type)
   {
     IntegrationEvent = JsonSerializer.Deserialize(Content, type, _caseInsensitiveOptions) as IntegrationEvent;
-    
+
     if (IntegrationEvent is null)
     {
       throw new JsonException($"Can't deserialize {type.FullName} integration event.");

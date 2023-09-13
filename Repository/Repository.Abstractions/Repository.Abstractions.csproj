@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>
+      title
+    </Title>
+    <PackageVersion>1.0.2</PackageVersion>
+    <Description>
+      description
+    </Description>
+    <PackageTags>tags</PackageTags>
+  </PropertyGroup>
+
+</Project>

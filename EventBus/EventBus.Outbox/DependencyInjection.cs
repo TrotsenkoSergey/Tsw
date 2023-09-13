@@ -16,10 +16,10 @@ public static class DependencyInjection
   {
     services.AddDbContext<IntegrationEventLogContext>(
       options => options.UseNpgsql(
-        connectionString, 
+        connectionString,
         opt => opt.EnableRetryOnFailure(
-          maxRetryCount: 15, 
-          maxRetryDelay: TimeSpan.FromSeconds(30), 
+          maxRetryCount: 15,
+          maxRetryDelay: TimeSpan.FromSeconds(30),
           errorCodesToAdd: null)
         ));
 
@@ -48,7 +48,7 @@ public static class DependencyInjection
   }
 
   private static IServiceCollection AddIntegrationEventServices(
-    this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore) 
+    this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore)
   {
     services.AddTransient<IIntegrationEventLogService>(sp =>
     {
