@@ -24,5 +24,5 @@ public interface IUnitOfWork<TTransaction>
 
   Task CommitTransactionAsync(TTransaction transaction, CancellationToken cancellationToken = default);
 
-  void RollbackTransaction();
+  Task RollbackAsync(CancellationToken cancellationToken = default);
 }

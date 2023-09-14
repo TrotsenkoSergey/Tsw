@@ -133,7 +133,7 @@ public class Repository<TDbContext, TEntity, TId> :
     }
     catch
     {
-      RollbackTransaction();
+      await RollbackAsync(ct);
       throw;
     }
     finally
@@ -143,11 +143,14 @@ public class Repository<TDbContext, TEntity, TId> :
     }
   }
 
-  public virtual void RollbackTransaction()
+  public virtual async Task RollbackAsync(CancellationToken cancellationToken)
   {
     try
     {
-      _currentTransaction?.Rollback();
+      if (_currentTransaction is not null)
+      {
+        await _currentTransaction.RollbackAsync(cancellationToken);
+      }
     }
     finally
     {
