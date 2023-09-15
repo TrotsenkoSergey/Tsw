@@ -2,6 +2,7 @@
 
 public interface IWriteRepository<TEntity, TId>
   where TEntity : class, IIdentifiable<TId>
+  where TId : notnull
 {
   TEntity Add(TEntity entity);
 

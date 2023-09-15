@@ -1,7 +1,8 @@
 ﻿namespace Tsw.Repository.Abstractions;
 
-public interface IReadRepository<TEntity, TId>
+public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TId>
   where TEntity : class, IIdentifiable<TId>
+  where TId : notnull
 {
   Task<List<TEntity>> FindAsync(
     Specification<TEntity> specification,
