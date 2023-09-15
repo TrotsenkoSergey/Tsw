@@ -11,6 +11,7 @@ public class Repository<TDbContext, TEntity, TId> :
   IRepository<TEntity, TId>, IUnitOfWork<IDbContextTransaction>, IDisposable
   where TDbContext : DbContext
   where TEntity : class, IIdentifiable<TId>
+  where TId : notnull
 {
   protected readonly TDbContext _context;
   protected readonly string? _sharedEntityName;
@@ -23,6 +24,12 @@ public class Repository<TDbContext, TEntity, TId> :
     _context = context;
     _sharedEntityName = sharedEntityName;
   }
+
+  public async Task<bool> IsUniqueId(
+    TId uniqueId,
+    bool noTracking,
+    CancellationToken ct) =>
+  !await GetQuery(noTracking).AnyAsync(x => x.Id.Equals(uniqueId));
 
   public virtual Task<List<TEntity>> FindAsync(
     Specification<TEntity> specification,
@@ -53,6 +60,7 @@ public class Repository<TDbContext, TEntity, TId> :
     return query;
   }
 
+  /// <inheritdoc />
   public virtual async Task<PaginationResult<TEntity>> FindPagedAsync(
         Specification<TEntity> specification,
         Pagination pagination,
