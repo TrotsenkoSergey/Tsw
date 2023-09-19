@@ -7,6 +7,10 @@ namespace Tsw.Repository.EFCore;
 
 public class BaseDbContext : DbContext, IUnitOfWork<IDbContextTransaction>, IDisposable
 {
+  public BaseDbContext(DbContextOptions<BaseDbContext> options) : base(options) 
+  {    
+  }
+
   private IDbContextTransaction? _currentTransaction;
   public virtual IDbContextTransaction? CurrentTransaction => _currentTransaction;
 
