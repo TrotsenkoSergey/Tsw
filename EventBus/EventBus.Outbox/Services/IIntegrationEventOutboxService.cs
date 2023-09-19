@@ -2,6 +2,7 @@
 
 public interface IIntegrationEventOutboxService
 {
+  bool NeedPublish { get; }
   Task PublishEventsThroughEventBusAsync(Guid transactionId);
   Task AddAndSaveEventAsync(IntegrationEvent evt, Transaction currentTransaction);
 }

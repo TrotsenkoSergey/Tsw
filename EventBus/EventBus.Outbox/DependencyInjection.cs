@@ -54,13 +54,13 @@ public static class DependencyInjection
   private static IServiceCollection AddIntegrationEventServices(
     this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore)
   {
-    services.AddTransient<IIntegrationEventLogService>(sp =>
+    services.AddScoped<IIntegrationEventLogService>(sp =>
     {
       var context = sp.GetRequiredService<IntegrationEventLogContext>();
       return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
     });
 
-    services.AddTransient<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
+    services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
 
     return services;
   }

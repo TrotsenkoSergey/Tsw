@@ -5,6 +5,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
   protected readonly ILogger<IntegrationEventOutboxService> _logger;
   protected readonly IEventBus _eventBus;
   protected readonly IIntegrationEventLogService _eventLogService;
+  protected bool _needPublish;
 
   public IntegrationEventOutboxService(
     ILogger<IntegrationEventOutboxService> logger,
@@ -14,7 +15,13 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
     _eventBus = eventBus;
     _eventLogService = integrationEventLogServiceFactory;
     _logger = logger;
+    _needPublish = false;
   }
+
+  /// <summary>
+  /// Flag created after AddAndSaveEventAsync() method call. Not actual in different scope lifetimes.
+  /// </summary>
+  public virtual bool NeedPublish => _needPublish;
 
   public virtual async Task AddAndSaveEventAsync(
     IntegrationEvent @event, Transaction transaction)
@@ -23,6 +30,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
       "Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", @event.Id, @event);
 
     await _eventLogService.SaveEventAsync(@event, transaction);
+    _needPublish = true;
   }
 
   public virtual async Task PublishEventsThroughEventBusAsync(Guid transactionId)
