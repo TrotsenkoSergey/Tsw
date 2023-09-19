@@ -1,21 +1,19 @@
 ﻿using System.Runtime.CompilerServices;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 
 using Tsw.Repository.Abstractions;
 
 namespace Tsw.Repository.EFCore;
 
-public class Repository<TDbContext, TEntity, TId> :
-  IRepository<TEntity, TId>, IUnitOfWork<IDbContextTransaction>, IDisposable
+public class Repository<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
   where TDbContext : DbContext
   where TEntity : class, IIdentifiable<TId>
   where TId : notnull
 {
   protected readonly TDbContext _context;
   protected readonly string? _sharedEntityName;
-  private IDbContextTransaction? _currentTransaction;
+
 
   public Repository(
     TDbContext context,
@@ -107,68 +105,4 @@ public class Repository<TDbContext, TEntity, TId> :
 
   protected virtual IQueryable<TEntity> GetQuery(bool noTracking = true) =>
     noTracking ? DbSet.AsNoTracking() : DbSet;
-
-  public virtual async Task<IDbContextTransaction?> BeginTransactionAsync(CancellationToken cancellationToken)
-  {
-    if (_currentTransaction is null)
-    {
-      _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-    }
-
-    return null;
-  }
-
-  public virtual IDbContextTransaction? CurrentTransaction => _currentTransaction;
-
-  public virtual async Task CommitTransactionAsync(
-    IDbContextTransaction transaction,
-    CancellationToken ct)
-  {
-    if (transaction == null)
-    {
-      throw new ArgumentNullException(nameof(transaction));
-    }
-
-    if (transaction != _currentTransaction)
-    {
-      throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
-    }
-
-    try
-    {
-      await SaveChangesAsync(ct);
-      await transaction.CommitAsync(ct);
-    }
-    catch
-    {
-      await RollbackAsync(ct);
-      throw;
-    }
-    finally
-    {
-      Dispose();
-      _currentTransaction = null;
-    }
-  }
-
-  public virtual async Task RollbackAsync(CancellationToken cancellationToken)
-  {
-    try
-    {
-      if (_currentTransaction is not null)
-      {
-        await _currentTransaction.RollbackAsync(cancellationToken);
-      }
-    }
-    finally
-    {
-      Dispose();
-      _currentTransaction = null;
-    }
-  }
-
-  public virtual void Dispose()
-  {
-    _currentTransaction?.Dispose();
-  }
 }
