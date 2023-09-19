@@ -17,10 +17,14 @@ public static class DependencyInjection
     services.AddDbContext<IntegrationEventLogContext>(
       options => options.UseNpgsql(
         connectionString,
-        opt => opt.EnableRetryOnFailure(
-          maxRetryCount: 15,
-          maxRetryDelay: TimeSpan.FromSeconds(30),
-          errorCodesToAdd: null)
+        opt =>
+        {
+          opt.EnableRetryOnFailure(
+            maxRetryCount: 15,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null);
+          opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
+        }
         ));
 
     services.AddIntegrationEventServices(assemblyFullNameWhereIntegrationEventsStore);
