@@ -38,7 +38,7 @@ public class Repository<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
     return query.ToListAsync(ct);
   }
 
-  private IQueryable<TEntity> GetQueryWithCondition(
+  protected virtual IQueryable<TEntity> GetQueryWithCondition(
     Specification<TEntity> specification,
     bool noTracking,
     Pagination? pagination = default)
@@ -71,8 +71,12 @@ public class Repository<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
     return new PaginationResult<TEntity>(totalCount, entities);
   }
 
-  public virtual Task<bool> AnyAsync(CancellationToken ct = default) =>
-    GetQuery().AnyAsync(ct);
+  public virtual Task<bool> AnyAsync(
+    Specification<TEntity> specification, bool noTracking, CancellationToken ct)
+  {
+    IQueryable<TEntity> query = GetQueryWithCondition(specification, noTracking);
+    return query.AnyAsync(ct);
+  }
 
   public virtual TEntity Add(TEntity entity) =>
     DbSet.Add(entity).Entity;

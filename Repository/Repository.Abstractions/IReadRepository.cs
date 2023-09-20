@@ -23,5 +23,6 @@ public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TId>
         bool noTracking = true,
         CancellationToken ct = default);
 
-  Task<bool> AnyAsync(CancellationToken ct = default);
+  Task<bool> AnyAsync(
+    Specification<TEntity> specification, bool noTracking = true, CancellationToken ct = default);
 }
