@@ -38,9 +38,9 @@ public class IntegrationEventLogService<ApplicationDbContext> : IIntegrationEven
   {
     if (transaction == null) throw new ArgumentNullException(nameof(transaction));
 
-    _integrationEventLogContext.Database.UseTransaction(transaction.Current.GetDbTransaction());
+    _integrationEventLogContext.Database.UseTransaction(transaction.Current);
 
-    var eventLogEntry = new IntegrationEventLog(@event, transaction.Current.TransactionId);
+    var eventLogEntry = new IntegrationEventLog(@event, transaction.Id);
     _integrationEventLogContext.Set<IntegrationEventLog>().Add(eventLogEntry);
 
     return _integrationEventLogContext.SaveChangesAsync();

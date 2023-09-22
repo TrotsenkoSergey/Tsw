@@ -1,3 +1,5 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using System.Data.Common;
 
-public record Transaction(IDbContextTransaction Current);
+namespace Tsw.EventBus.Outbox;
+
+public record Transaction(Guid Id, DbTransaction Current);
