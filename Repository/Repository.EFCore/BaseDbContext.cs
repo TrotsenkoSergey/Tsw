@@ -1,32 +1,39 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data.Common;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 using Tsw.Repository.Abstractions;
 
 namespace Tsw.Repository.EFCore;
 
-public class BaseDbContext : DbContext, IUnitOfWork<IDbContextTransaction>, IDisposable
+public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
 {
   public BaseDbContext(DbContextOptions options) : base(options) 
   {    
   }
 
-  private IDbContextTransaction? _currentTransaction;
-  public virtual IDbContextTransaction? CurrentTransaction => _currentTransaction;
+  private Guid? _currentTransactionId;
+  public virtual Guid? CurrentTransactionId => _currentTransactionId;
 
-  public virtual async Task<IDbContextTransaction?> BeginTransactionAsync(CancellationToken cancellationToken)
+  public virtual async Task<DbTransaction?> BeginTransactionAsync(CancellationToken cancellationToken)
   {
-    if (_currentTransaction is null)
+    if (_currentTransactionId is null)
     {
-      _currentTransaction = await Database.BeginTransactionAsync(cancellationToken);
-      return _currentTransaction;
+      var transaction = await Database.BeginTransactionAsync(cancellationToken);
+      _currentTransactionId = transaction.TransactionId;
+      return transaction.GetDbTransaction();
     }
 
     return null;
   }
 
+  public DatabaseFacade DataBase => Database;
+
   public virtual async Task CommitTransactionAsync(
-    IDbContextTransaction transaction,
+    DbTransaction transaction,
+    Guid currentTransactionId,
     CancellationToken ct)
   {
     if (transaction == null)
@@ -34,9 +41,9 @@ public class BaseDbContext : DbContext, IUnitOfWork<IDbContextTransaction>, IDis
       throw new ArgumentNullException(nameof(transaction));
     }
 
-    if (transaction != _currentTransaction)
+    if (currentTransactionId != _currentTransactionId)
     {
-      throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+      throw new InvalidOperationException($"Transaction {currentTransactionId} is not current");
     }
 
     try
@@ -46,35 +53,26 @@ public class BaseDbContext : DbContext, IUnitOfWork<IDbContextTransaction>, IDis
     }
     catch
     {
-      await RollbackAsync(ct);
+      await RollbackAsync(transaction, ct);
       throw;
     }
     finally
     {
       ((IDisposable)this).Dispose();
-      _currentTransaction = null;
+      _currentTransactionId = null;
     }
   }
 
-  public virtual async Task RollbackAsync(CancellationToken cancellationToken)
+  public virtual async Task RollbackAsync(DbTransaction transaction, CancellationToken cancellationToken)
   {
     try
     {
-      if (_currentTransaction is not null)
-      {
-        await _currentTransaction.RollbackAsync(cancellationToken);
-      }
+        await transaction.RollbackAsync(cancellationToken);
     }
     finally
     {
       ((IDisposable)this).Dispose();
-      _currentTransaction = null;
+      _currentTransactionId = null;
     }
-  }
-
-  public override void Dispose()
-  {
-    _currentTransaction?.Dispose();
-    base.Dispose();
   }
 }
