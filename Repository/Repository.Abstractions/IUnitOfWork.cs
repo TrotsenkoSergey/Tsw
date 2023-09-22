@@ -39,7 +39,8 @@ public interface IUnitOfWork<DatabaseFacade>
   /// <param name="transaction">The DbContextTransaction.</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  Task CommitTransactionAsync(DbTransaction transaction, CancellationToken cancellationToken = default);
+  Task CommitTransactionAsync(
+    DbTransaction transaction, Guid currentTransactionId, CancellationToken cancellationToken = default);
 
   /// <summary>
   /// Roll back <see cref="TTransaction"/>.
