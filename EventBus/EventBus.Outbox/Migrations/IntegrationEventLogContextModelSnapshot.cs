@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Tsw.EventBus.Outbox.Migrations
 {
-  [DbContext(typeof(IntegrationEventLogContext))]
+  [DbContext(typeof(IntegrationEventLogContext<>))]
     partial class IntegrationEventLogContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

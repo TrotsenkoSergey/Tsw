@@ -1,18 +1,22 @@
-﻿using Npgsql;
+﻿namespace Tsw.EventBus.Outbox;
 
-namespace Tsw.EventBus.Outbox;
-
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext>
+/// <summary>
+/// Only for creation migrations.
+/// </summary>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext<TestDbContext>>
 {
-  public IntegrationEventLogContext CreateDbContext(string[] args)
+  public IntegrationEventLogContext<TestDbContext> CreateDbContext(string[] args)
   {
-    var optionsBuilder = new DbContextOptionsBuilder<IntegrationEventLogContext>();
+    var optionsBuilder = new DbContextOptionsBuilder<TestDbContext>();
+    optionsBuilder.UseNpgsql(".", options => 
+      options.MigrationsAssembly(GetType().Assembly.GetName().Name));
+    var testDb = new TestDbContext(optionsBuilder.Options);
 
-    var dbConnection = new NpgsqlConnection(".");
-
-    optionsBuilder.UseNpgsql(dbConnection, 
-      options => options.MigrationsAssembly(GetType().Assembly.GetName().Name));
-
-    return new IntegrationEventLogContext(dbConnection);
+    return new IntegrationEventLogContext<TestDbContext>(testDb);
   }
+}
+
+public class TestDbContext : DbContext
+{ 
+  public TestDbContext(DbContextOptions<TestDbContext> options) : base(options) { }
 }

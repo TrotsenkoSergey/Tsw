@@ -1,13 +1,14 @@
 ﻿namespace Tsw.EventBus.Outbox.Services;
 
-public class IntegrationEventLogService : IIntegrationEventLogService
+public class IntegrationEventLogService<ApplicationDbContext> : IIntegrationEventLogService
+  where ApplicationDbContext : DbContext
 {
-  protected readonly IntegrationEventLogContext _integrationEventLogContext;
+  protected readonly IntegrationEventLogContext<ApplicationDbContext> _integrationEventLogContext;
   protected readonly List<Type> _eventTypes;
 
   public IntegrationEventLogService(
     string assemblyFullNameWhereIntegrationEventsStore,
-    IntegrationEventLogContext context)
+    IntegrationEventLogContext<ApplicationDbContext> context)
   {
     _integrationEventLogContext = context;
     _eventTypes = Assembly.Load(assemblyFullNameWhereIntegrationEventsStore)
@@ -16,7 +17,8 @@ public class IntegrationEventLogService : IIntegrationEventLogService
         .ToList();
   }
 
-  public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync(Guid transactionId)
+  public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync(
+    Guid transactionId)
   {
     string tid = transactionId.ToString();
 

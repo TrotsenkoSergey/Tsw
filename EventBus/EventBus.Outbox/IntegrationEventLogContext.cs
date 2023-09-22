@@ -1,35 +1,33 @@
 ﻿using System.Data.Common;
 
+using Microsoft.EntityFrameworkCore.Migrations;
+
 namespace Tsw.EventBus.Outbox;
 
-public class IntegrationEventLogContext : DbContext
+public class IntegrationEventLogContext<ApplicationDbContext> : DbContext
+  where ApplicationDbContext : DbContext
 {
-  private readonly IServiceProvider _sp;
+  private readonly DbConnection _connection;
 
-  //public IntegrationEventLogContext(
-  //  DbContextOptions<IntegrationEventLogContext> options) : base(options)
-  //{
-  //}
-
-  public IntegrationEventLogContext(IServiceProvider sp)
+  public IntegrationEventLogContext(ApplicationDbContext applicationDbContext)
   {
-    _sp = sp;
+    _connection = applicationDbContext.Database.GetDbConnection();
   }
 
   public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
   {
-    var dbConnection = _sp.GetRequiredService<DbConnection>();
     optionsBuilder.UseNpgsql(
-      dbConnection,
+      _connection,
       opt =>
       {
         opt.EnableRetryOnFailure(
           maxRetryCount: 15,
           maxRetryDelay: TimeSpan.FromSeconds(30),
           errorCodesToAdd: null);
-        opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
+        opt.MigrationsAssembly(typeof(IntegrationEventLogContext<>).Assembly.FullName);
+        opt.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
       });
     base.OnConfiguring(optionsBuilder);
   }

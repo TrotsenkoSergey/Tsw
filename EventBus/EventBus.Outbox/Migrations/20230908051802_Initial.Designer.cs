@@ -11,7 +11,7 @@ using Tsw.EventBus.Outbox;
 
 namespace Tsw.EventBus.Outbox.Migrations
 {
-    [DbContext(typeof(IntegrationEventLogContext))]
+    [DbContext(typeof(IntegrationEventLogContext<>))]
     [Migration("20230908051802_Initial")]
     partial class Initial
     {
