@@ -1,11 +1,13 @@
-﻿namespace Tsw.Repository.Abstractions;
+﻿using System.Data.Common;
+
+namespace Tsw.Repository.Abstractions;
 
 /// <summary>
 /// Represents the unit of work interface.
 /// </summary>
-/// <typeparam name="TTransaction">DbContextTransaction type.</typeparam>
-public interface IUnitOfWork<TTransaction>
-  where TTransaction : class
+/// <typeparam name="DatabaseFacade">DatabaseFacade type.</typeparam>
+public interface IUnitOfWork<DatabaseFacade>
+  where DatabaseFacade : class
 {
   /// <summary>
   /// Saves all of the pending changes in the unit of work.
@@ -18,22 +20,26 @@ public interface IUnitOfWork<TTransaction>
   /// Begins a transaction on the current unit of work.
   /// </summary>
   /// <param name="cancellationToken">The cancellation token.</param>
-  /// <typeparam name="TTransaction">DbContextTransaction type.</typeparam>
   /// <returns>The new database context transaction or <see cref="null"/> if transaction exist.</returns>
-  Task<TTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default);
+  Task<DbTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get <see cref="TTransaction"/> or <see cref="null"/> if there was no transaction.
+  /// Get <see cref="Guid"/> or <see cref="null"/> if there was no transaction.
   /// </summary>
-  TTransaction? CurrentTransaction { get; }
+  Guid? CurrentTransactionId { get; }
 
   /// <summary>
-  /// Commit <see cref="TTransaction"/>.
+  /// Get DatabaseFacade.
+  /// </summary>
+  DatabaseFacade Database { get; }
+
+  /// <summary>
+  /// Commit <see cref="DbTransaction"/>.
   /// </summary>
   /// <param name="transaction">The DbContextTransaction.</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  Task CommitTransactionAsync(TTransaction transaction, CancellationToken cancellationToken = default);
+  Task CommitTransactionAsync(DbTransaction transaction, CancellationToken cancellationToken = default);
 
   /// <summary>
   /// Roll back <see cref="TTransaction"/>.
