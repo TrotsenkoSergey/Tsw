@@ -31,7 +31,7 @@ public interface IUnitOfWork<DatabaseFacade>
   /// <summary>
   /// Get DatabaseFacade.
   /// </summary>
-  DatabaseFacade Database { get; }
+  DatabaseFacade DataBase { get; }
 
   /// <summary>
   /// Commit <see cref="DbTransaction"/>.
