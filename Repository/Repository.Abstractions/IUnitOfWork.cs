@@ -47,5 +47,5 @@ public interface IUnitOfWork<DatabaseFacade>
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  Task RollbackAsync(CancellationToken cancellationToken = default);
+  Task RollbackAsync(DbTransaction transaction, CancellationToken cancellationToken = default);
 }
