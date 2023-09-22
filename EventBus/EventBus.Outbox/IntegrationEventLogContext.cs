@@ -1,13 +1,37 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using System.Data.Common;
+
+namespace Tsw.EventBus.Outbox;
 
 public class IntegrationEventLogContext : DbContext
 {
-  public IntegrationEventLogContext(
-    DbContextOptions<IntegrationEventLogContext> options) : base(options)
+  private readonly DbConnection _connection;
+
+  //public IntegrationEventLogContext(
+  //  DbContextOptions<IntegrationEventLogContext> options) : base(options)
+  //{
+  //}
+
+  public IntegrationEventLogContext(DbConnection connection)
   {
+    _connection = connection;
   }
 
   public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
+
+  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  {
+    optionsBuilder.UseNpgsql(
+      _connection,
+      opt =>
+      {
+        opt.EnableRetryOnFailure(
+          maxRetryCount: 15,
+          maxRetryDelay: TimeSpan.FromSeconds(30),
+          errorCodesToAdd: null);
+        opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
+      });
+    base.OnConfiguring(optionsBuilder);
+  }
 
   protected override void OnModelCreating(ModelBuilder builder)
   {

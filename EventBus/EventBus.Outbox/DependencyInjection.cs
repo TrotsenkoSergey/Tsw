@@ -1,4 +1,8 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using System.Data.Common;
+
+using Microsoft.EntityFrameworkCore.Infrastructure;
+
+namespace Tsw.EventBus.Outbox;
 
 public static class DependencyInjection
 {
@@ -32,6 +36,17 @@ public static class DependencyInjection
     return services;
   }
 
+  public static IServiceCollection AddOutboxIntegrationEvents(
+    this IServiceCollection services,
+    string assemblyFullNameWhereIntegrationEventsStore)
+  {
+    services.AddDbContext<IntegrationEventLogContext>();
+
+    services.AddIntegrationEventServices(assemblyFullNameWhereIntegrationEventsStore);
+
+    return services;
+  }
+
   /// <summary>
   /// Here you need to init migrations for IntegrationEventLogContext.
   /// </summary>
@@ -59,6 +74,15 @@ public static class DependencyInjection
       var context = sp.GetRequiredService<IntegrationEventLogContext>();
       return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
     });
+
+    //  private static IServiceCollection AddIntegrationEventServices(
+    //this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore)
+    //  {
+    //    services.AddScoped<IIntegrationEventLogService>(sp =>
+    //    {
+    //      var contextBuilder = sp.GetRequiredService<Func<DbConnection, IntegrationEventLogContext>>();
+    //      return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
+    //    });
 
     services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
 
