@@ -1,4 +1,6 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using Npgsql;
+
+namespace Tsw.EventBus.Outbox;
 
 public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext>
 {
@@ -6,8 +8,11 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Integratio
   {
     var optionsBuilder = new DbContextOptionsBuilder<IntegrationEventLogContext>();
 
-    optionsBuilder.UseNpgsql(".", options => options.MigrationsAssembly(GetType().Assembly.GetName().Name));
+    var dbConnection = new NpgsqlConnection(".");
 
-    return new IntegrationEventLogContext(optionsBuilder.Options);
+    optionsBuilder.UseNpgsql(dbConnection, 
+      options => options.MigrationsAssembly(GetType().Assembly.GetName().Name));
+
+    return new IntegrationEventLogContext(dbConnection);
   }
 }

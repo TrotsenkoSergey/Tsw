@@ -4,24 +4,25 @@ namespace Tsw.EventBus.Outbox;
 
 public class IntegrationEventLogContext : DbContext
 {
-  private readonly DbConnection _connection;
+  private readonly IServiceProvider _sp;
 
   //public IntegrationEventLogContext(
   //  DbContextOptions<IntegrationEventLogContext> options) : base(options)
   //{
   //}
 
-  public IntegrationEventLogContext(DbConnection connection)
+  public IntegrationEventLogContext(IServiceProvider sp)
   {
-    _connection = connection;
+    _sp = sp;
   }
 
   public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
 
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
   {
+    var dbConnection = _sp.GetRequiredService<DbConnection>();
     optionsBuilder.UseNpgsql(
-      _connection,
+      dbConnection,
       opt =>
       {
         opt.EnableRetryOnFailure(
