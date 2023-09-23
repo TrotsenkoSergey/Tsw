@@ -1,16 +1,15 @@
 ﻿namespace Tsw.EventBus.Outbox.Services;
 
-public class IntegrationEventLogService<ApplicationDbContext> : IIntegrationEventLogService
-  where ApplicationDbContext : DbContext
+public class IntegrationEventLogService : IIntegrationEventLogService
 {
-  protected readonly IntegrationEventLogContext<ApplicationDbContext> _integrationEventLogContext;
+  protected readonly IntegrationEventLogContext _integrationEventLogContext;
   protected readonly List<Type> _eventTypes;
 
   public IntegrationEventLogService(
     string assemblyFullNameWhereIntegrationEventsStore,
-    IntegrationEventLogContext<ApplicationDbContext> context)
+    IDbContextFactory<IntegrationEventLogContext> contextFactory)
   {
-    _integrationEventLogContext = context;
+    _integrationEventLogContext = contextFactory.CreateDbContext();
     _eventTypes = Assembly.Load(assemblyFullNameWhereIntegrationEventsStore)
         .GetTypes()
         .Where(t => t.Name.EndsWith(nameof(IntegrationEvent)))

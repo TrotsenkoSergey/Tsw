@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Tsw.EventBus.Outbox;
 
@@ -11,19 +11,30 @@ public static class DependencyInjection
   /// <param name="optionsAction"></param>
   /// <param name="assemblyFullNameWhereIntegrationEventsStore"></param>
   /// <returns></returns>
-  public static IServiceCollection AddOutboxIntegrationEvents<ApplicationDbContext>(
+  public static IServiceCollection AddOutboxIntegrationEvents<MainDbContext>(
     this IServiceCollection services,
-    string assemblyFullNameWhereIntegrationEventsStore)
-    where ApplicationDbContext : DbContext
+    string assemblyFullNameWhereIntegrationEventsStore,
+  string connectionString)
+    where MainDbContext : DbContext
   {
-    
-    services.AddDbContext<IntegrationEventLogContext<ApplicationDbContext>>();
+    services.AddPooledDbContextFactory<IntegrationEventLogContext>(opt =>
+      opt.UseNpgsql(connectionString, opt =>
+      {
+        //opt.EnableRetryOnFailure(
+        //  maxRetryCount: 15,
+        //  maxRetryDelay: TimeSpan.FromSeconds(30),
+        //  errorCodesToAdd: null);
+        opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
+        opt.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
+      }));
+    services.AddSingleton<IntegrationEventLogContextScopedFactory<MainDbContext>>();
+    services.AddScoped(sp => sp.GetRequiredService<IntegrationEventLogContextScopedFactory<MainDbContext>>().CreateDbContext());
+
 
     services.AddScoped<IIntegrationEventLogService>(sp =>
     {
-      var context = sp.GetRequiredService<IntegrationEventLogContext<ApplicationDbContext>>();
-      return new IntegrationEventLogService<ApplicationDbContext>(
-        assemblyFullNameWhereIntegrationEventsStore, context);
+      var context = sp.GetRequiredService<IntegrationEventLogContextScopedFactory<MainDbContext>>();
+      return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
     });
 
     services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();

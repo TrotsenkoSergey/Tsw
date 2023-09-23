@@ -11,8 +11,8 @@ using Tsw.EventBus.Outbox;
 
 namespace Tsw.EventBus.Outbox.Migrations
 {
-    [DbContext(typeof(IntegrationEventLogContext<>))]
-    [Migration("20230908051802_Initial")]
+    [DbContext(typeof(IntegrationEventLogContext))]
+    [Migration("20230923142728_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -41,8 +41,8 @@ namespace Tsw.EventBus.Outbox.Migrations
 
                     b.Property<string>("EventTypeName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");

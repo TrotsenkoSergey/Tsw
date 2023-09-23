@@ -1,36 +1,10 @@
-﻿using System.Data.Common;
+﻿namespace Tsw.EventBus.Outbox;
 
-using Microsoft.EntityFrameworkCore.Migrations;
-
-namespace Tsw.EventBus.Outbox;
-
-public class IntegrationEventLogContext<ApplicationDbContext> : DbContext
-  where ApplicationDbContext : DbContext
+public class IntegrationEventLogContext : DbContext
 {
-  private readonly DbConnection _connection;
-
-  public IntegrationEventLogContext(ApplicationDbContext applicationDbContext)
-  {
-    _connection = applicationDbContext.Database.GetDbConnection();
-  }
+  public IntegrationEventLogContext(DbContextOptions<IntegrationEventLogContext> options) : base(options) { }
 
   public DbSet<IntegrationEventLog> IntegrationEventLogs { get; set; }
-
-  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-  {
-    optionsBuilder.UseNpgsql(
-      _connection,
-      opt =>
-      {
-        opt.EnableRetryOnFailure(
-          maxRetryCount: 15,
-          maxRetryDelay: TimeSpan.FromSeconds(30),
-          errorCodesToAdd: null);
-        opt.MigrationsAssembly(typeof(IntegrationEventLogContext<>).Assembly.FullName);
-        opt.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
-      });
-    base.OnConfiguring(optionsBuilder);
-  }
 
   protected override void OnModelCreating(ModelBuilder builder)
   {
@@ -55,7 +29,7 @@ public class IntegrationEventLogContext<ApplicationDbContext> : DbContext
     builder.Property(e => e.TimesSent).IsRequired();
 
     builder.Property(e => e.EventTypeName)
-      .HasMaxLength(50)
+      .HasMaxLength(100)
       .IsRequired();
 
     builder.Property(e => e.TransactionId)

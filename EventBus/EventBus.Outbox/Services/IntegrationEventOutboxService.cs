@@ -4,16 +4,16 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
 {
   protected readonly ILogger<IntegrationEventOutboxService> _logger;
   protected readonly IEventBus _eventBus;
-  protected readonly IIntegrationEventLogService _eventLogService;
+  private readonly IServiceProvider _serviceProvider;
   protected bool _needPublish;
 
   public IntegrationEventOutboxService(
     ILogger<IntegrationEventOutboxService> logger,
     IEventBus eventBus,
-    IIntegrationEventLogService integrationEventLogServiceFactory)
+    IServiceProvider serviceProvider)
   {
     _eventBus = eventBus;
-    _eventLogService = integrationEventLogServiceFactory;
+    _serviceProvider = serviceProvider;
     _logger = logger;
     _needPublish = false;
   }
@@ -29,14 +29,17 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
     _logger.LogInformation(
       "Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", @event.Id, @event);
 
-    await _eventLogService.SaveEventAsync(@event, transaction);
+    var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogService>();
+    await eventService.SaveEventAsync(@event, transaction);
+
     _needPublish = true;
   }
 
   public virtual async Task PublishEventsThroughEventBusAsync(Guid transactionId)
   {
+    var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogService>();
     var integrationEvents =
-      await _eventLogService.GetEventLogsAwaitingToPublishAsync(transactionId);
+      await eventService.GetEventLogsAwaitingToPublishAsync(transactionId);
 
     foreach (var @event in integrationEvents)
     {
@@ -44,15 +47,15 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
 
       try
       {
-        await _eventLogService.MarkEventAsInProgressAsync(@event.EventId);
+        await eventService.MarkEventAsInProgressAsync(@event.EventId);
         _eventBus.Publish(@event.IntegrationEvent!); // after GetEventLogsAwaitingToPublishAsync() it's not null
-        await _eventLogService.MarkEventAsPublishedAsync(@event.EventId);
+        await eventService.MarkEventAsPublishedAsync(@event.EventId);
       }
       catch (Exception ex)
       {
         _logger.LogError(ex, "Error publishing integration event: {IntegrationEventId}", @event.EventId);
 
-        await _eventLogService.MarkEventAsFailedAsync(@event.EventId);
+        await eventService.MarkEventAsFailedAsync(@event.EventId);
       }
     }
   }
