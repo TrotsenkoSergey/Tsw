@@ -1,9 +1,21 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using System.Text.Encodings.Web;
+using System.Text.Unicode;
+
+namespace Tsw.EventBus.Outbox;
 
 public class IntegrationEventLog
 {
-  private readonly JsonSerializerOptions _indentedOptions = new() { WriteIndented = true };
-  private readonly JsonSerializerOptions _caseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
+  private readonly JsonSerializerOptions _indentedOptions = new() 
+  { 
+    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic), 
+    WriteIndented = true 
+  };
+
+  private readonly JsonSerializerOptions _caseInsensitiveOptions = new() 
+  {
+    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+    PropertyNameCaseInsensitive = true 
+  };
 
   public IntegrationEventLog(IntegrationEvent @event, Guid transactionId)
   {

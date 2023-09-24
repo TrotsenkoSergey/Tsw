@@ -1,4 +1,6 @@
-﻿namespace Tsw.EventBus.Outbox.Services;
+﻿using System.Data.Common;
+
+namespace Tsw.EventBus.Outbox.Services;
 
 public class IntegrationEventOutboxService : IIntegrationEventOutboxService
 {
@@ -24,13 +26,13 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
   public virtual bool NeedPublish => _needPublish;
 
   public virtual async Task AddAndSaveEventAsync(
-    IntegrationEvent @event, Transaction transaction)
+    IntegrationEvent @event, Transaction transaction, DbConnection dbConnection)
   {
     _logger.LogInformation(
       "Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", @event.Id, @event);
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogService>();
-    await eventService.SaveEventAsync(@event, transaction);
+    await eventService.SaveEventAsync(@event, transaction, dbConnection);
 
     _needPublish = true;
   }

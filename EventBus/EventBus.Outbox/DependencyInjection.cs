@@ -17,7 +17,9 @@ public static class DependencyInjection
   string connectionString)
     where MainDbContext : DbContext
   {
-    services.AddPooledDbContextFactory<IntegrationEventLogContext>(opt =>
+    services.AddSingleton(new OutboxSettings(assemblyFullNameWhereIntegrationEventsStore, connectionString));
+
+    services.AddDbContext<IntegrationEventLogContext>(opt =>
       opt.UseNpgsql(connectionString, opt =>
       {
         //opt.EnableRetryOnFailure(
@@ -26,16 +28,9 @@ public static class DependencyInjection
         //  errorCodesToAdd: null);
         opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
         opt.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
-      }));
-    services.AddSingleton<IntegrationEventLogContextScopedFactory<MainDbContext>>();
-    services.AddScoped(sp => sp.GetRequiredService<IntegrationEventLogContextScopedFactory<MainDbContext>>().CreateDbContext());
+      }), ServiceLifetime.Transient);
 
-
-    services.AddScoped<IIntegrationEventLogService>(sp =>
-    {
-      var context = sp.GetRequiredService<IntegrationEventLogContextScopedFactory<MainDbContext>>();
-      return new IntegrationEventLogService(assemblyFullNameWhereIntegrationEventsStore, context);
-    });
+    services.AddScoped<IIntegrationEventLogService, IntegrationEventLogService>();
 
     services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
 

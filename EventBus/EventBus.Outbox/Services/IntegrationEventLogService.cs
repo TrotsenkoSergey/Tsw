@@ -1,16 +1,18 @@
-﻿namespace Tsw.EventBus.Outbox.Services;
+﻿using System.Data.Common;
+
+namespace Tsw.EventBus.Outbox.Services;
 
 public class IntegrationEventLogService : IIntegrationEventLogService
 {
-  protected readonly IntegrationEventLogContext _integrationEventLogContext;
+  protected readonly IServiceProvider _sp;
   protected readonly List<Type> _eventTypes;
 
   public IntegrationEventLogService(
-    string assemblyFullNameWhereIntegrationEventsStore,
-    IDbContextFactory<IntegrationEventLogContext> contextFactory)
+    OutboxSettings outboxSettings,
+    IServiceProvider sp)
   {
-    _integrationEventLogContext = contextFactory.CreateDbContext();
-    _eventTypes = Assembly.Load(assemblyFullNameWhereIntegrationEventsStore)
+    _sp = sp;
+    _eventTypes = Assembly.Load(outboxSettings.AssemblyFullNameWhereIntegrationEventsStore)
         .GetTypes()
         .Where(t => t.Name.EndsWith(nameof(IntegrationEvent)))
         .ToList();
@@ -21,7 +23,9 @@ public class IntegrationEventLogService : IIntegrationEventLogService
   {
     string tid = transactionId.ToString();
 
-    var result = await _integrationEventLogContext.Set<IntegrationEventLog>()
+    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
+
+    var result = await context.Set<IntegrationEventLog>()
         .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished).ToListAsync();
 
     if (result.Any())
@@ -33,16 +37,20 @@ public class IntegrationEventLogService : IIntegrationEventLogService
     return new List<IntegrationEventLog>();
   }
 
-  public virtual Task SaveEventAsync(IntegrationEvent @event, Transaction transaction)
+  public virtual Task SaveEventAsync(
+    IntegrationEvent @event, Transaction transaction, DbConnection dbConnection)
   {
     if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+    if (dbConnection == null) throw new ArgumentNullException(nameof(dbConnection));
 
-    _integrationEventLogContext.Database.UseTransaction(transaction.Current);
+    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
+    context.Database.SetDbConnection(dbConnection);
+    context.Database.UseTransaction(transaction.Current);
 
     var eventLogEntry = new IntegrationEventLog(@event, transaction.Id);
-    _integrationEventLogContext.Set<IntegrationEventLog>().Add(eventLogEntry);
+    context.Set<IntegrationEventLog>().Add(eventLogEntry);
 
-    return _integrationEventLogContext.SaveChangesAsync();
+    return context.SaveChangesAsync();
   }
 
   public virtual Task MarkEventAsPublishedAsync(Guid eventId) =>
@@ -56,14 +64,16 @@ public class IntegrationEventLogService : IIntegrationEventLogService
 
   protected virtual Task UpdateEventStatus(Guid eventId, EventStateEnum status)
   {
-    var eventLogEntry = _integrationEventLogContext.Set<IntegrationEventLog>().Single(e => e.EventId == eventId);
+    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
+
+    var eventLogEntry = context.Set<IntegrationEventLog>().Single(e => e.EventId == eventId);
     eventLogEntry.State = status;
 
     if (status == EventStateEnum.InProgress)
       eventLogEntry.TimesSent++;
 
-    _integrationEventLogContext.Set<IntegrationEventLog>().Update(eventLogEntry);
+    context.Set<IntegrationEventLog>().Update(eventLogEntry);
 
-    return _integrationEventLogContext.SaveChangesAsync();
+    return context.SaveChangesAsync();
   }
 }

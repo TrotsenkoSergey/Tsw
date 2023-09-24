@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.5" />
 
     <!--Repository.EFcore-->
-    <PackageVersion Include="Tsw.Repository.Abstractions" Version="1.0.4"/><!--package from this library-->
+    <PackageVersion Include="Tsw.Repository.Abstractions" Version="1.0.0"/><!--package from this library-->
   </ItemGroup>
 
 </Project>
