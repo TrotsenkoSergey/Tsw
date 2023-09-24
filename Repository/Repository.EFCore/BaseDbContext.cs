@@ -10,40 +10,28 @@ namespace Tsw.Repository.EFCore;
 
 public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
 {
-  public BaseDbContext(DbContextOptions options) : base(options) 
-  {    
+  public BaseDbContext(DbContextOptions options) : base(options)
+  {
   }
-
-  private Guid? _currentTransactionId;
-  public virtual Guid? CurrentTransactionId => _currentTransactionId;
 
   public virtual async Task<DbTransaction?> BeginTransactionAsync(CancellationToken cancellationToken)
   {
-    if (_currentTransactionId is null)
-    {
-      var transaction = await Database.BeginTransactionAsync(cancellationToken);
-      _currentTransactionId = transaction.TransactionId;
-      return transaction.GetDbTransaction();
-    }
-
-    return null;
+    var transaction = await Database.BeginTransactionAsync(cancellationToken);
+    return transaction?.GetDbTransaction();
   }
 
   public DatabaseFacade DataBase => Database;
 
-  public virtual async Task CommitTransactionAsync(
-    DbTransaction transaction,
-    Guid currentTransactionId,
-    CancellationToken ct)
+  public virtual async Task CommitTransactionAsync(DbTransaction transaction, CancellationToken ct)
   {
-    if (transaction == null)
+    if (transaction is null)
     {
       throw new ArgumentNullException(nameof(transaction));
     }
 
-    if (currentTransactionId != _currentTransactionId)
+    if (Database.CurrentTransaction != transaction)
     {
-      throw new InvalidOperationException($"Transaction {currentTransactionId} is not current");
+      throw new InvalidOperationException($"Transaction {transaction} is not current");
     }
 
     try
@@ -59,7 +47,6 @@ public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
     finally
     {
       ((IDisposable)this).Dispose();
-      _currentTransactionId = null;
     }
   }
 
@@ -67,12 +54,15 @@ public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
   {
     try
     {
-        await transaction.RollbackAsync(cancellationToken);
+      await transaction.RollbackAsync(cancellationToken);
+    }
+    catch 
+    {
+      throw;
     }
     finally
     {
       ((IDisposable)this).Dispose();
-      _currentTransactionId = null;
     }
   }
 }

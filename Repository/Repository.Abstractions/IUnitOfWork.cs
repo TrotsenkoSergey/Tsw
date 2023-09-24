@@ -24,11 +24,6 @@ public interface IUnitOfWork<DatabaseFacade>
   Task<DbTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get <see cref="Guid"/> or <see cref="null"/> if there was no transaction.
-  /// </summary>
-  Guid? CurrentTransactionId { get; }
-
-  /// <summary>
   /// Get DatabaseFacade.
   /// </summary>
   DatabaseFacade DataBase { get; }
@@ -40,7 +35,7 @@ public interface IUnitOfWork<DatabaseFacade>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task CommitTransactionAsync(
-    DbTransaction transaction, Guid currentTransactionId, CancellationToken cancellationToken = default);
+    DbTransaction transaction, CancellationToken cancellationToken = default);
 
   /// <summary>
   /// Roll back <see cref="TTransaction"/>.
