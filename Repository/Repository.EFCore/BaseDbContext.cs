@@ -29,11 +29,6 @@ public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
       throw new ArgumentNullException(nameof(transaction));
     }
 
-    if (Database.CurrentTransaction != transaction)
-    {
-      throw new InvalidOperationException($"Transaction {transaction} is not current");
-    }
-
     try
     {
       await SaveChangesAsync(ct);
