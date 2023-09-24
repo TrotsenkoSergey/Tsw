@@ -1,22 +1,21 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+namespace Tsw.EventBus.Outbox;
 
 /// <summary>
 /// Only for creation migrations.
 /// </summary>
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext<TestDbContext>>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext>
 {
-  public IntegrationEventLogContext<TestDbContext> CreateDbContext(string[] args)
+  public IntegrationEventLogContext CreateDbContext(string[] args)
   {
-    var optionsBuilder = new DbContextOptionsBuilder<TestDbContext>();
-    optionsBuilder.UseNpgsql(".", options => 
-      options.MigrationsAssembly(GetType().Assembly.GetName().Name));
-    var testDb = new TestDbContext(optionsBuilder.Options);
+    var optionsBuilder = new DbContextOptionsBuilder<IntegrationEventLogContext>();
+    optionsBuilder.UseNpgsql(".", options =>
+      {
+        options.MigrationsAssembly(GetType().Assembly.GetName().Name);
+        options.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
+      });
 
-    return new IntegrationEventLogContext<TestDbContext>(testDb);
+    return new IntegrationEventLogContext(optionsBuilder.Options);
   }
-}
-
-public class TestDbContext : DbContext
-{ 
-  public TestDbContext(DbContextOptions<TestDbContext> options) : base(options) { }
 }
