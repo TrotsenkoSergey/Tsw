@@ -31,7 +31,6 @@ public class BaseDbContext : DbContext, IUnitOfWork<DatabaseFacade>
 
     try
     {
-      await SaveChangesAsync(ct);
       await transaction.CommitAsync(ct);
     }
     catch
