@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <Title>
-      title
+      EFCore Repository implementation with specification.
     </Title>
     <PackageVersion>1.0.0</PackageVersion>
     <Description>
-      description
+      Repository and unit of work Implementation into with EFCore and possibilities of specification.
+      Typicaly use with Repository.Abstractions.
     </Description>
-    <PackageTags>tags</PackageTags>
+    <PackageTags>Repository; UnitOfWork; Specification</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

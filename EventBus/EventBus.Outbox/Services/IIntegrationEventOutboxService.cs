@@ -4,7 +4,6 @@ namespace Tsw.EventBus.Outbox.Services;
 
 public interface IIntegrationEventOutboxService
 {
-  bool NeedPublish { get; }
-  Task PublishEventsThroughEventBusAsync(Guid transactionId);
-  Task AddAndSaveEventAsync(IntegrationEvent evt, Transaction currentTransaction, DbConnection dbConnection);
+  Task AddAndSaveEventAsync(IntegrationEvent evt, DbConnection dbConnection, DbTransaction currentTransaction);
+  Task GetAndPublishEventsThroughEventBusAsync();
 }

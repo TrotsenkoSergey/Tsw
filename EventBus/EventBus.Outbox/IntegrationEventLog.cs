@@ -17,15 +17,15 @@ public class IntegrationEventLog
     PropertyNameCaseInsensitive = true 
   };
 
-  public IntegrationEventLog(IntegrationEvent @event, Guid transactionId)
+  public IntegrationEventLog(IntegrationEvent @event)
   {
     EventId = @event.Id;
-    Content = JsonSerializer.Serialize(@event, @event.GetType(), _indentedOptions);
+    Type eventType = @event.GetType();
+    Content = JsonSerializer.Serialize(@event, eventType, _indentedOptions);
     CreatedOnUtc = @event.CreationDate;
-    State = EventStateEnum.NotPublished;
+    State = EventState.NotPublished;
     TimesSent = 0;
-    EventTypeName = @event.GetType().FullName!;
-    TransactionId = transactionId.ToString();
+    EventTypeName = eventType.FullName!;
   }
 
   public Guid EventId { get; private set; }
@@ -34,13 +34,11 @@ public class IntegrationEventLog
 
   public DateTime CreatedOnUtc { get; private set; }
 
-  public EventStateEnum State { get; set; }
+  public EventState State { get; set; }
 
   public int TimesSent { get; set; }
 
   public string EventTypeName { get; private set; }
-
-  public string TransactionId { get; private set; }
 
   public string EventTypeShortName => EventTypeName.Split('.')?.Last() ?? EventTypeName;
 

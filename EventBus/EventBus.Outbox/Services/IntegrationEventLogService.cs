@@ -4,76 +4,69 @@ namespace Tsw.EventBus.Outbox.Services;
 
 public class IntegrationEventLogService : IIntegrationEventLogService
 {
-  protected readonly IServiceProvider _sp;
   protected readonly List<Type> _eventTypes;
+  protected readonly IntegrationEventLogContext _context;
 
   public IntegrationEventLogService(
     OutboxSettings outboxSettings,
-    IServiceProvider sp)
+    IntegrationEventLogContext context)
   {
-    _sp = sp;
     _eventTypes = Assembly.Load(outboxSettings.AssemblyFullNameWhereIntegrationEventsStore)
         .GetTypes()
         .Where(t => t.Name.EndsWith(nameof(IntegrationEvent)))
         .ToList();
+    _context = context;
   }
 
-  public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync(
-    Guid transactionId)
+  public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()
   {
-    string tid = transactionId.ToString();
+    var result = await _context.Set<IntegrationEventLog>()
+        .Where(e => e.State == EventState.NotPublished)
+        .ToListAsync();
 
-    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
-
-    var result = await context.Set<IntegrationEventLog>()
-        .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished).ToListAsync();
-
-    if (result.Any())
+    if (!result.Any())
     {
-      return result.OrderBy(o => o.CreatedOnUtc)
-          .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
+      return Enumerable.Empty<IntegrationEventLog>();
     }
 
-    return new List<IntegrationEventLog>();
+    return result.OrderBy(o => o.CreatedOnUtc)
+        .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
   }
 
   public virtual Task SaveEventAsync(
-    IntegrationEvent @event, Transaction transaction, DbConnection dbConnection)
+    IntegrationEvent @event, DbConnection dbConnection, DbTransaction currentTransaction)
   {
-    if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+    if (currentTransaction == null) throw new ArgumentNullException(nameof(currentTransaction));
     if (dbConnection == null) throw new ArgumentNullException(nameof(dbConnection));
 
-    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
-    context.Database.SetDbConnection(dbConnection);
-    context.Database.UseTransaction(transaction.Current);
+    _context.Database.SetDbConnection(dbConnection);
+    _context.Database.UseTransaction(currentTransaction);
 
-    var eventLogEntry = new IntegrationEventLog(@event, transaction.Id);
-    context.Set<IntegrationEventLog>().Add(eventLogEntry);
+    var eventLogEntry = new IntegrationEventLog(@event);
+    _context.Set<IntegrationEventLog>().Add(eventLogEntry);
 
-    return context.SaveChangesAsync();
+    return _context.SaveChangesAsync();
   }
 
   public virtual Task MarkEventAsPublishedAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, EventStateEnum.Published);
+    UpdateEventStatus(eventId, EventState.Published);
 
   public virtual Task MarkEventAsInProgressAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, EventStateEnum.InProgress);
+    UpdateEventStatus(eventId, EventState.InProgress);
 
   public virtual Task MarkEventAsFailedAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, EventStateEnum.PublishedFailed);
+    UpdateEventStatus(eventId, EventState.PublishedFailed);
 
-  protected virtual Task UpdateEventStatus(Guid eventId, EventStateEnum status)
+  protected virtual Task UpdateEventStatus(Guid eventId, EventState status)
   {
-    var context = _sp.GetRequiredService<IntegrationEventLogContext>();
-
-    var eventLogEntry = context.Set<IntegrationEventLog>().Single(e => e.EventId == eventId);
+    var eventLogEntry = _context.Set<IntegrationEventLog>().Single(e => e.EventId == eventId);
     eventLogEntry.State = status;
 
-    if (status == EventStateEnum.InProgress)
+    if (status == EventState.InProgress)
       eventLogEntry.TimesSent++;
 
-    context.Set<IntegrationEventLog>().Update(eventLogEntry);
+    _context.Set<IntegrationEventLog>().Update(eventLogEntry);
 
-    return context.SaveChangesAsync();
+    return _context.SaveChangesAsync();
   }
 }

@@ -6,8 +6,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
 {
   protected readonly ILogger<IntegrationEventOutboxService> _logger;
   protected readonly IEventBus _eventBus;
-  private readonly IServiceProvider _serviceProvider;
-  protected bool _needPublish;
+  protected readonly IServiceProvider _serviceProvider;
 
   public IntegrationEventOutboxService(
     ILogger<IntegrationEventOutboxService> logger,
@@ -17,35 +16,32 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxService
     _eventBus = eventBus;
     _serviceProvider = serviceProvider;
     _logger = logger;
-    _needPublish = false;
   }
-
-  /// <summary>
-  /// Flag created after AddAndSaveEventAsync() method call. Not actual in different scope lifetimes.
-  /// </summary>
-  public virtual bool NeedPublish => _needPublish;
 
   public virtual async Task AddAndSaveEventAsync(
-    IntegrationEvent @event, Transaction transaction, DbConnection dbConnection)
+    IntegrationEvent @event, DbConnection dbConnection, DbTransaction transaction)
   {
-    _logger.LogInformation(
-      "Enqueuing integration event {IntegrationEventId} to repository ({@IntegrationEvent})", @event.Id, @event);
+    _logger.LogInformation("Enqueuing integration event to repository ({@IntegrationEvent})", @event);
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogService>();
-    await eventService.SaveEventAsync(@event, transaction, dbConnection);
-
-    _needPublish = true;
+    await eventService.SaveEventAsync(@event, dbConnection, transaction);
   }
 
-  public virtual async Task PublishEventsThroughEventBusAsync(Guid transactionId)
+  public virtual async Task GetAndPublishEventsThroughEventBusAsync()
   {
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogService>();
-    var integrationEvents =
-      await eventService.GetEventLogsAwaitingToPublishAsync(transactionId);
+    var integrationEvents = await eventService.GetEventLogsAwaitingToPublishAsync();
+
+    if (!integrationEvents.Any())
+    {
+      return;
+    }
+
+    _logger.LogInformation("Got {count} integration events.", integrationEvents.Count());
 
     foreach (var @event in integrationEvents)
     {
-      _logger.LogInformation("Publishing integration event: {IntegrationEventId} - ({@IntegrationEvent})", @event.EventId, @event.IntegrationEvent);
+      _logger.LogInformation("Publishing integration event: ({@IntegrationEvent})", @event.IntegrationEvent);
 
       try
       {
