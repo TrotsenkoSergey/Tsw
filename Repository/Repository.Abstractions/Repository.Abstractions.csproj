@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <Title>
-      title
+      Repository template with specification and unit of work.
     </Title>
     <PackageVersion>1.0.0</PackageVersion>
     <Description>
-      description
+      Interfaces and common classes for implementing the repository pattern.
     </Description>
-    <PackageTags>tags</PackageTags>
+    <PackageTags>Repository; UnitOfWork; Specification</PackageTags>
   </PropertyGroup>
 
 </Project>
