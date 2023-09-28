@@ -22,6 +22,46 @@ namespace Tsw.EventBus.Outbox.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("EventState", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventStates", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Name = "NotPublished"
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Name = "InProgress"
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Name = "Published"
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Name = "PublishedFailed"
+                        });
+                });
+
             modelBuilder.Entity("Tsw.EventBus.Outbox.IntegrationEventLog", b =>
                 {
                     b.Property<Guid>("EventId")
@@ -30,8 +70,7 @@ namespace Tsw.EventBus.Outbox.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
@@ -41,16 +80,11 @@ namespace Tsw.EventBus.Outbox.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("State")
-                        .HasColumnType("integer");
+                    b.Property<short>("State")
+                        .HasColumnType("smallint");
 
                     b.Property<int>("TimesSent")
                         .HasColumnType("integer");
-
-                    b.Property<string>("TransactionId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
 
                     b.HasKey("EventId");
 
