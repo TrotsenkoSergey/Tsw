@@ -5,9 +5,9 @@ namespace Tsw.Repository.Abstractions;
 /// <summary>
 /// Represents the unit of work interface.
 /// </summary>
-/// <typeparam name="DatabaseFacade">DatabaseFacade type.</typeparam>
-public interface IUnitOfWork<DatabaseFacade>
-  where DatabaseFacade : class
+/// <typeparam name="TDatabase">Database type (e.g. DatabaseFacade).</typeparam>
+public interface IUnitOfWork<TDatabase>
+  where TDatabase : class
 {
   /// <summary>
   /// Saves all of the pending changes in the unit of work.
@@ -24,9 +24,9 @@ public interface IUnitOfWork<DatabaseFacade>
   Task<DbTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get DatabaseFacade.
+  /// Get Database.
   /// </summary>
-  DatabaseFacade DataBase { get; }
+  TDatabase DataBase { get; }
 
   /// <summary>
   /// Commit <see cref="DbTransaction"/>.
@@ -38,7 +38,7 @@ public interface IUnitOfWork<DatabaseFacade>
     DbTransaction transaction, CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Roll back <see cref="TTransaction"/>.
+  /// Roll back <see cref="DbTransaction"/>.
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>

@@ -2,7 +2,7 @@
 
 public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TId>
   where TEntity : class, IIdentifiable<TId>
-  where TId : notnull
+  where TId : IEquatable<TId>
 {
   Task<List<TEntity>> FindAsync(
     Specification<TEntity> specification,

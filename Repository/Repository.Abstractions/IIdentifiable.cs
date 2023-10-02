@@ -1,7 +1,7 @@
 ﻿namespace Tsw.Repository.Abstractions;
 
 public interface IIdentifiable<TId>
-  where TId : notnull
+  where TId : IEquatable<TId>
 {
   TId Id { get; }
 }
