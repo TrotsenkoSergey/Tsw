@@ -6,23 +6,23 @@ using Tsw.Repository.Abstractions;
 
 namespace Tsw.Repository.EFCore;
 
-public class Repository<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
-  where TDbContext : DbContext
+public class Repository<TEntity, TId> : IRepository<TEntity, TId>
   where TEntity : class, IIdentifiable<TId>
-  where TId : notnull
+  where TId : IEquatable<TId>
 {
-  protected readonly TDbContext _context;
+  protected readonly DbContext _context;
   protected readonly string? _sharedEntityName;
 
 
   public Repository(
-    TDbContext context,
+    DbContext context,
     string? sharedEntityName = default)
   {
     _context = context;
     _sharedEntityName = sharedEntityName;
   }
 
+  /// <inheritdoc />
   public async Task<bool> IsUniqueId(
     TId uniqueId,
     bool noTracking,
@@ -55,6 +55,16 @@ public class Repository<TDbContext, TEntity, TId> : IRepository<TEntity, TId>
 
     query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
     query = specification.ThenIncludes.Aggregate(query, (current, include) => current.Include(include));
+
+    if (specification.OrderByAsc is not null)
+    {
+      query = query.OrderBy(specification.OrderByAsc);
+    }
+    else if (specification.OrderByDesc is not null)
+    {
+      query = query.OrderByDescending(specification.OrderByDesc);
+    }
+
     return query;
   }
 
