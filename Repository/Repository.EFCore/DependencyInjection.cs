@@ -9,7 +9,7 @@ namespace Tsw.Repository.EFCore;
 public static class DependencyInjection
 {
   public static IServiceCollection AddEfCoreRepository<TDbContext>(this IServiceCollection services)
-    where TDbContext: BaseDbContext 
+    where TDbContext: BaseDbContext
   {
     services.AddScoped<IUnitOfWork<DatabaseFacade>>(sp => sp.GetRequiredService<TDbContext>());
 

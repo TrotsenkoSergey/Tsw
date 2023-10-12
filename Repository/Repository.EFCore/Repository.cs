@@ -8,7 +8,7 @@ namespace Tsw.Repository.EFCore;
 
 public class Repository<TEntity, TId> : IRepository<TEntity, TId>
   where TEntity : class, IIdentifiable<TId>
-  where TId : IEquatable<TId>
+  where TId: notnull
 {
   protected readonly DbContext _context;
   protected readonly string? _sharedEntityName;
