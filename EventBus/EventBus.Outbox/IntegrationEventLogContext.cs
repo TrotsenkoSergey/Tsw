@@ -13,7 +13,7 @@ public class IntegrationEventLogContext : DbContext
   protected override void OnModelCreating(ModelBuilder builder)
   {
     builder.Entity<IntegrationEventLog>(ConfigureIntegrationEventLogEntry);
-    builder.ApplyUtcDateTimeConverter();
+    // builder.ApplyUtcDateTimeConverter();
 
     builder.ApplyEnumTableBuilding<EventState>();
   }
