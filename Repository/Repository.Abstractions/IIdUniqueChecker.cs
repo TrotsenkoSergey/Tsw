@@ -1,6 +1,6 @@
 ﻿namespace Tsw.Repository.Abstractions;
 
-public interface IIdUniqueChecker<TId>
+public interface IIdUniqueChecker<TEntity, TId>
 {
   Task<bool> IsUniqueId(
         TId uniqueId,
