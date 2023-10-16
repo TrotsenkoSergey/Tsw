@@ -1,4 +1,7 @@
-﻿namespace Tsw.EventBus.RabbitMQ;
+﻿using System.Text.Encodings.Web;
+using System.Text.Unicode;
+
+namespace Tsw.EventBus.RabbitMQ;
 
 public class RabbitMQEventBus : IEventBus, IDisposable
 {
@@ -14,6 +17,8 @@ public class RabbitMQEventBus : IEventBus, IDisposable
   private readonly string _exchangeName;
   private string _queueName;
 
+  private readonly JsonSerializerOptions _jsonOptions;
+
   public RabbitMQEventBus(
       ILogger<RabbitMQEventBus> logger,
       IRabbitMQPersistentConnection persistentConnection,
@@ -23,15 +28,19 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       string queueName,
       int retryCount = DEFAULT_RETRY_COUNT)
   {
-    _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    _persistentConnection = persistentConnection ?? throw new ArgumentNullException(nameof(persistentConnection));
+    ArgumentNullException.ThrowIfNull(logger);
+    ArgumentNullException.ThrowIfNull(persistentConnection);
+    ArgumentNullException.ThrowIfNull(serviceProvider);
+    _logger = logger;
+    _persistentConnection = persistentConnection;
+    _serviceProvider = serviceProvider;
     _subsManager = subsManager ?? new InMemoryEventBusSubscriptionsManager();
     _exchangeName = exchangeName;
     _queueName = queueName;
-    _consumerChannel = CreateConsumerChannel();
-    _serviceProvider = serviceProvider;
     _retryCount = retryCount;
+    _consumerChannel = CreateConsumerChannel();
     _subsManager.OnEventRemoved += SubsManager_OnEventRemoved;
+    _jsonOptions = CreateJsonOptions();
   }
 
   private void SubsManager_OnEventRemoved(object? sender, string eventName)
@@ -76,10 +85,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
 
     channel.ExchangeDeclare(exchange: _exchangeName, type: ExchangeType.Direct);
 
-    var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), new JsonSerializerOptions
-    {
-      WriteIndented = true
-    });
+    var body = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), _jsonOptions);
 
     policy.Execute(() =>
     {
@@ -184,29 +190,32 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     }
   }
 
-  private async Task Consumer_Received(object sender, BasicDeliverEventArgs eventArgs)
+  private async Task Consumer_Received(object sender, BasicDeliverEventArgs e)
   {
-    var eventName = eventArgs.RoutingKey;
-    var message = Encoding.UTF8.GetString(eventArgs.Body.Span);
+    string eventName = e.RoutingKey;
+    var eventType = _subsManager.GetEventTypeByName(eventName);
+
+    var objectFromBody = JsonSerializer.Deserialize(e.Body.Span, eventType, _jsonOptions);
+    string jsonMessage = JsonSerializer.Serialize(objectFromBody, eventType, _jsonOptions);
 
     try
     {
-      if (message.ToLowerInvariant().Contains("throw-fake-exception"))
+      if (jsonMessage.ToLowerInvariant().Contains("throw-fake-exception"))
       {
-        throw new InvalidOperationException($"Fake exception requested: \"{message}\"");
+        throw new InvalidOperationException($"Fake exception requested: \"{jsonMessage}\"");
       }
 
-      await ProcessEvent(eventName, message);
+      await ProcessEvent(eventName, jsonMessage);
     }
     catch (Exception ex)
     {
-      _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", message);
+      _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", jsonMessage);
     }
 
     // Even on exception we take the message off the queue.
     // in a REAL WORLD app this should be handled with a Dead Letter Exchange (DLX). 
     // For more information see: https://www.rabbitmq.com/dlx.html
-    _consumerChannel.BasicAck(eventArgs.DeliveryTag, multiple: false);
+    _consumerChannel.BasicAck(e.DeliveryTag, multiple: false);
   }
 
   private IModel CreateConsumerChannel()
@@ -263,10 +272,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         {
           if (handler == null) continue;
           var eventType = _subsManager.GetEventTypeByName(eventName);
-          object? integrationEvent = JsonSerializer.Deserialize(
-              message,
-              eventType,
-              new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+          object? integrationEvent = JsonSerializer.Deserialize(message, eventType, _jsonOptions);
 
           Type concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
 
@@ -282,4 +288,12 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
     }
   }
+
+  private JsonSerializerOptions CreateJsonOptions() =>
+    new()
+    {
+      WriteIndented = true,
+      Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+      PropertyNameCaseInsensitive = true
+    };
 }
