@@ -1,4 +1,6 @@
-﻿namespace Tsw.Repository.Abstractions;
+﻿using System.Threading;
+
+namespace Tsw.Repository.Abstractions;
 
 public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TEntity, TId>
   where TEntity : class, IIdentifiable<TId>
@@ -24,4 +26,6 @@ public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TEntity, TId>
 
   Task<bool> AnyAsync(
     Specification<TEntity> specification, bool noTracking = true, CancellationToken ct = default);
+
+  Task<TEntity?> LastOrDefault(bool noTracking = true, CancellationToken ct = default);
 }

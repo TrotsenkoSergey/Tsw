@@ -88,6 +88,9 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
     return query.AnyAsync(ct);
   }
 
+  public Task<TEntity?> LastOrDefault(bool noTracking = true, CancellationToken ct = default) =>
+    GetQuery(noTracking).LastOrDefaultAsync(ct);
+
   public virtual TEntity Add(TEntity entity) =>
     DbSet.Add(entity).Entity;
 
