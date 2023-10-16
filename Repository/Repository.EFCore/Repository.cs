@@ -89,7 +89,7 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
   }
 
   public Task<TEntity?> LastOrDefault(bool noTracking = true, CancellationToken ct = default) =>
-    GetQuery(noTracking).LastOrDefaultAsync(ct);
+    GetQuery(noTracking).OrderBy(x => x.Id).LastOrDefaultAsync(ct);
 
   public virtual TEntity Add(TEntity entity) =>
     DbSet.Add(entity).Entity;
