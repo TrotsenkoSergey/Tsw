@@ -1,10 +1,10 @@
 ﻿namespace Tsw.EventBus.Outbox;
 
-public class IntegrationEventLogContext : DbContext
+public class IntegrationEventLogDbContext : DbContext
 {
   public const int EventTypeNameMaxLength = 100;
 
-  public IntegrationEventLogContext(DbContextOptions<IntegrationEventLogContext> options) : base(options)
+  public IntegrationEventLogDbContext(DbContextOptions<IntegrationEventLogDbContext> options) : base(options)
   {
   }
 
@@ -15,7 +15,7 @@ public class IntegrationEventLogContext : DbContext
     builder.Entity<IntegrationEventLog>(ConfigureIntegrationEventLogEntry);
     // builder.ApplyUtcDateTimeConverter();
 
-    builder.ApplyEnumTableBuilding<EventState>();
+    builder.ApplyEnumTableBuilding<IntegrationEventState>();
   }
 
   void ConfigureIntegrationEventLogEntry(EntityTypeBuilder<IntegrationEventLog> builder)

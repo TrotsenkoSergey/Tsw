@@ -1,8 +1,6 @@
-﻿using System.Data.Common;
+﻿namespace Tsw.EventBus.Outbox.Common;
 
-namespace Tsw.EventBus.Outbox.Services;
-
-public interface IIntegrationEventLogService
+public interface IIntegrationEventLogPersistenceTransactional : IIntegrationEventLogPersistence
 {
   /// <summary>
   /// Save event across a specific connection and transaction.
@@ -14,8 +12,4 @@ public interface IIntegrationEventLogService
   /// <exception cref="ArgumentNullException"></exception>
   Task SaveEventAsync(IntegrationEvent @event, DbConnection dbConnection, DbTransaction currentTransaction);
 
-  Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync();
-  Task MarkEventAsPublishedAsync(Guid eventId);
-  Task MarkEventAsInProgressAsync(Guid eventId);
-  Task MarkEventAsFailedAsync(Guid eventId);
 }

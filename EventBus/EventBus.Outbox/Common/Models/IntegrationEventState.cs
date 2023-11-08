@@ -1,6 +1,6 @@
-﻿namespace Tsw.EventBus.Outbox;
+﻿namespace Tsw.EventBus.Outbox.Common;
 
-public enum EventState
+public enum IntegrationEventState
 {
   NotPublished = 1,
   InProgress = 2,

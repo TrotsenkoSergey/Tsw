@@ -1,10 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-
-using Quartz;
-
-using Tsw.EventBus.Outbox.BackgroundJobs;
-
-namespace Tsw.EventBus.Outbox;
+﻿namespace Tsw.EventBus.Outbox;
 
 public static class DependencyInjection
 {
@@ -19,20 +13,14 @@ public static class DependencyInjection
   public static IServiceCollection AddOutboxIntegrationEvents(this IServiceCollection services,
     string connectionString, string assemblyFullNameWhereIntegrationEventsStore)
   {
-    services.AddSingleton(new OutboxSettings(assemblyFullNameWhereIntegrationEventsStore));
-
-    services.AddDbContext<IntegrationEventLogContext>(opt =>
+    services.AddDbContext<IntegrationEventLogDbContext>(opt =>
       opt.UseNpgsql(connectionString, opt =>
       {
-        opt.MigrationsAssembly(typeof(IntegrationEventLogContext).Assembly.FullName);
+        opt.MigrationsAssembly(typeof(IntegrationEventLogDbContext).Assembly.FullName);
         opt.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
       }), ServiceLifetime.Transient);
 
-    services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService>();
-
-    services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
-
-    services.AddQuartzJobs();
+    services.AddOutboxServices(assemblyFullNameWhereIntegrationEventsStore);
 
     return services;
   }
@@ -50,10 +38,21 @@ public static class DependencyInjection
     Action<DbContextOptionsBuilder> optionsBuilder,
     string assemblyFullNameWhereIntegrationEventsStore)
   {
+    services.AddDbContext<IntegrationEventLogDbContext>(optionsBuilder, ServiceLifetime.Transient);
+    services.AddOutboxServices(assemblyFullNameWhereIntegrationEventsStore);
+    return services;
+  }
+
+  private static IServiceCollection AddOutboxServices(this IServiceCollection services, string assemblyFullNameWhereIntegrationEventsStore) 
+  {
     services.AddSingleton(new OutboxSettings(assemblyFullNameWhereIntegrationEventsStore));
-    services.AddDbContext<IntegrationEventLogContext>(optionsBuilder, ServiceLifetime.Transient);
-    services.AddTransient<IIntegrationEventLogService, IntegrationEventLogService>();
-    services.AddScoped<IIntegrationEventOutboxService, IntegrationEventOutboxService>();
+
+    services.AddTransient<IIntegrationEventLogPersistenceTransactional, IntegrationEventLogService>();
+    services.AddTransient<IIntegrationEventLogPersistence>(sp => sp.GetRequiredService<IIntegrationEventLogPersistenceTransactional>());
+
+    services.AddScoped<IIntegrationEventOutboxTransactional, IntegrationEventOutboxService>();
+    services.AddScoped<IIntegrationEventOutboxService>(sp => sp.GetRequiredService<IIntegrationEventOutboxTransactional>());
+
     services.AddQuartzJobs();
     return services;
   }

@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Tsw.EventBus.Outbox.Migrations
+namespace Tsw.EventBus.Outbox.EFCore.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -14,19 +14,6 @@ namespace Tsw.EventBus.Outbox.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "EventStates",
-                columns: table => new
-                {
-                    Id = table.Column<short>(type: "smallint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventStates", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "IntegrationEventLogs",
                 columns: table => new
@@ -43,8 +30,21 @@ namespace Tsw.EventBus.Outbox.Migrations
                     table.PrimaryKey("PK_IntegrationEventLogs", x => x.EventId);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "IntegrationEventStates",
+                columns: table => new
+                {
+                    Id = table.Column<short>(type: "smallint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IntegrationEventStates", x => x.Id);
+                });
+
             migrationBuilder.InsertData(
-                table: "EventStates",
+                table: "IntegrationEventStates",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
@@ -59,10 +59,10 @@ namespace Tsw.EventBus.Outbox.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "EventStates");
+                name: "IntegrationEventLogs");
 
             migrationBuilder.DropTable(
-                name: "IntegrationEventLogs");
+                name: "IntegrationEventStates");
         }
     }
 }

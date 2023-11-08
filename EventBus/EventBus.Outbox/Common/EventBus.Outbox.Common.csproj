@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>
+      Outbox integration events common abstractions for implementation.
+    </Title>
+    <PackageVersion>1.0.1</PackageVersion>
+    <Description>
+      Contains atomicity and resiliency when publishing integration events throw event bus.
+      Support transactional table to store the integration events.
+      Asynchronously publish events through background job.
+      Typicaly use with Tsw.EventBus.Outbox.EFCore or Tsw.EventBus.Outbox.Marten.
+    </Description>
+    <PackageTags>EventBus; Outbox; IntegrationEvent</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quartz" />
+    <PackageReference Include="Quartz.Extensions.Hosting" />
+    <PackageReference Include="Tsw.EventBus.Common" />
+  </ItemGroup>
+
+</Project>

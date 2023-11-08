@@ -5,17 +5,17 @@ namespace Tsw.EventBus.Outbox;
 /// <summary>
 /// Only for creation migrations.
 /// </summary>
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogContext>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<IntegrationEventLogDbContext>
 {
-  public IntegrationEventLogContext CreateDbContext(string[] args)
+  public IntegrationEventLogDbContext CreateDbContext(string[] args)
   {
-    var optionsBuilder = new DbContextOptionsBuilder<IntegrationEventLogContext>();
+    var optionsBuilder = new DbContextOptionsBuilder<IntegrationEventLogDbContext>();
     optionsBuilder.UseNpgsql(".", options =>
       {
         options.MigrationsAssembly(GetType().Assembly.GetName().Name);
         options.MigrationsHistoryTable(HistoryRepository.DefaultTableName, "eventslog");
       });
 
-    return new IntegrationEventLogContext(optionsBuilder.Options);
+    return new IntegrationEventLogDbContext(optionsBuilder.Options);
   }
 }

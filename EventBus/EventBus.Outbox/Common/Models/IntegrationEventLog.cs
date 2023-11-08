@@ -1,29 +1,18 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Unicode;
-
-namespace Tsw.EventBus.Outbox;
+﻿namespace Tsw.EventBus.Outbox.Common;
 
 public class IntegrationEventLog
 {
-  private readonly JsonSerializerOptions _indentedOptions = new() 
-  { 
-    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic), 
-    WriteIndented = true 
-  };
+  private readonly JavaScriptEncoder _encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic);
+  private readonly JsonSerializerOptions _indentedOptions;
+  private readonly JsonSerializerOptions _caseInsensitiveOptions;
 
-  private readonly JsonSerializerOptions _caseInsensitiveOptions = new() 
-  {
-    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-    PropertyNameCaseInsensitive = true 
-  };
-
-  public IntegrationEventLog(IntegrationEvent @event)
+  public IntegrationEventLog(IntegrationEvent @event) : this()
   {
     EventId = @event.Id;
     Type eventType = @event.GetType();
     Content = JsonSerializer.Serialize(@event, eventType, _indentedOptions);
     CreatedOnUtc = @event.CreationDate;
-    State = EventState.NotPublished;
+    State = IntegrationEventState.NotPublished;
     TimesSent = 0;
     EventTypeName = eventType.FullName!;
   }
@@ -34,7 +23,7 @@ public class IntegrationEventLog
 
   public DateTime CreatedOnUtc { get; private set; }
 
-  public EventState State { get; set; }
+  public IntegrationEventState State { get; set; }
 
   public int TimesSent { get; set; }
 
@@ -56,13 +45,11 @@ public class IntegrationEventLog
     return this;
   }
 
-  /// <summary>
-  /// Initializes a new instance of the <see cref="IntegrationEventLog"/> class.
-  /// </summary>
-  /// <remarks>
-  /// Required by EF Core.
-  /// </remarks>
 #pragma warning disable CS8618
-  private IntegrationEventLog() { }
+  private IntegrationEventLog()
+  {
+    _indentedOptions = new JsonSerializerOptions() { Encoder = _encoder, WriteIndented = true };
+    _caseInsensitiveOptions = new JsonSerializerOptions() { Encoder = _encoder, PropertyNameCaseInsensitive = true };
+  }
 #pragma warning restore CS8618
 }

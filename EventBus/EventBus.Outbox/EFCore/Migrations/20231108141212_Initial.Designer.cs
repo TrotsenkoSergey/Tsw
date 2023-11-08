@@ -9,10 +9,10 @@ using Tsw.EventBus.Outbox;
 
 #nullable disable
 
-namespace Tsw.EventBus.Outbox.Migrations
+namespace Tsw.EventBus.Outbox.EFCore.Migrations
 {
-    [DbContext(typeof(IntegrationEventLogContext))]
-    [Migration("20230926161449_Initial")]
+    [DbContext(typeof(IntegrationEventLogDbContext))]
+    [Migration("20231108141212_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -20,12 +20,12 @@ namespace Tsw.EventBus.Outbox.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.0-rc.2.23480.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EventState", b =>
+            modelBuilder.Entity("IntegrationEventState", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +40,7 @@ namespace Tsw.EventBus.Outbox.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EventStates", (string)null);
+                    b.ToTable("IntegrationEventStates", (string)null);
 
                     b.HasData(
                         new
@@ -65,7 +65,7 @@ namespace Tsw.EventBus.Outbox.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Tsw.EventBus.Outbox.IntegrationEventLog", b =>
+            modelBuilder.Entity("Tsw.EventBus.Outbox.Common.IntegrationEventLog", b =>
                 {
                     b.Property<Guid>("EventId")
                         .ValueGeneratedOnAdd()
