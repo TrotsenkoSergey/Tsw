@@ -22,7 +22,7 @@ public class IntegrationEventLogDbContext : DbContext
   {
     builder.ToTable(nameof(IntegrationEventLogs));
 
-    builder.HasKey(e => e.EventId);
+    builder.HasKey(e => e.Id);
 
     builder.Property(e => e.Content).IsRequired();
 

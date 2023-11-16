@@ -26,7 +26,7 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rc.2.23480.1" />
     <PackageVersion Include="Tsw.EventBus.Outbox.Common" Version="1.0.1"/>
-    <PackageVersion Include="Marten" Version="6.0.5"/>
+    <PackageVersion Include="Marten" Version="6.0.5" />
     <!--Repository.EFcore-->
     <PackageVersion Include="Tsw.Repository.Abstractions" Version="6.3.0" />
     <!--package from this library-->

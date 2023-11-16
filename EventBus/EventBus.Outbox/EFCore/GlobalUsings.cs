@@ -8,9 +8,6 @@ global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 global using Microsoft.Extensions.DependencyInjection;
 
-global using Quartz;
-
-global using Tsw.EventBus.Outbox.EFCore;
 global using Tsw.EventBus.Common.Abstractions;
 global using Tsw.EventBus.IntegrationEvents;
 global using Tsw.EventBus.Outbox.Common;

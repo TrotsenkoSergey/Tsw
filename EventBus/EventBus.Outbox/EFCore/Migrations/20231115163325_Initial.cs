@@ -18,7 +18,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
                 name: "IntegrationEventLogs",
                 columns: table => new
                 {
-                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     CreatedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     State = table.Column<short>(type: "smallint", nullable: false),
@@ -27,7 +27,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IntegrationEventLogs", x => x.EventId);
+                    table.PrimaryKey("PK_IntegrationEventLogs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(

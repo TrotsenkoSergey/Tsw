@@ -12,7 +12,7 @@ using Tsw.EventBus.Outbox;
 namespace Tsw.EventBus.Outbox.EFCore.Migrations
 {
     [DbContext(typeof(IntegrationEventLogDbContext))]
-    [Migration("20231108141212_Initial")]
+    [Migration("20231115163325_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -67,7 +67,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
 
             modelBuilder.Entity("Tsw.EventBus.Outbox.Common.IntegrationEventLog", b =>
                 {
-                    b.Property<Guid>("EventId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -89,7 +89,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
                     b.Property<int>("TimesSent")
                         .HasColumnType("integer");
 
-                    b.HasKey("EventId");
+                    b.HasKey("Id");
 
                     b.ToTable("IntegrationEventLogs", (string)null);
                 });

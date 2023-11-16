@@ -16,28 +16,38 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
     _logger = logger;
   }
 
-  public virtual async Task AddAndSaveEventAsync(
-    IntegrationEvent @event, DbConnection dbConnection, DbTransaction transaction)
+  public virtual async Task AddAndSaveEventWithAsync(DbTransaction transaction, IntegrationEvent @event)
   {
     _logger.LogInformation("Enqueuing integration event to repository ({@IntegrationEvent})", @event);
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistenceTransactional>();
-    await eventService.SaveEventAsync(@event, dbConnection, transaction);
+    await eventService.SaveEventWithAsync(transaction, @event);
+
+    await ActivateBackGroundTasksAsync();
   }
 
-  public Task AddAndSaveEventAsync(IntegrationEvent @event)
+  public virtual async Task AddAndSaveEventAsync(IntegrationEvent @event)
   {
     _logger.LogInformation("Enqueuing integration event to repository ({@IntegrationEvent})", @event);
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistence>();
-    return eventService.SaveEventAsync(@event);
+    await eventService.SaveEventAsync(@event);
+
+    await ActivateBackGroundTasksAsync();
   }
 
-  public virtual async Task GetAndPublishEventsThroughEventBusAsync(bool inJson)
+  protected virtual async Task ActivateBackGroundTasksAsync()
+  {
+    var factory = _serviceProvider.GetRequiredService<ISchedulerFactory>();
+    var backgroundTasks = await factory.GetScheduler();
+    await backgroundTasks.TriggerJob(new JobKey(nameof(ProcessOutboxMessagesJob)));
+  }
+
+  public virtual async Task GetAndPublishEventsThroughEventBusAsync(bool withoutAdditionalSerialization)
   {
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistence>();
 
-    if (inJson)
+    if (withoutAdditionalSerialization)
     {
       var integrationEventsInJson = await eventService.GetEventLogsAwaitingToPublishInJsonAsync();
       await PublishIntegrationEvents(integrationEventsInJson, eventService);
@@ -48,7 +58,8 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
     await PublishIntegrationEvents(integrationEvents, eventService);
   }
 
-  private async Task PublishIntegrationEvents(IEnumerable<IntegrationEventLog> integrationEvents, IIntegrationEventLogPersistence eventService)
+  protected virtual async Task PublishIntegrationEvents(
+    IEnumerable<IntegrationEventLog> integrationEvents, IIntegrationEventLogPersistence eventService)
   {
     if (!integrationEvents.Any())
     {
@@ -63,20 +74,21 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
 
       try
       {
-        await eventService.MarkEventAsInProgressAsync(@event.EventId);
+        await eventService.MarkEventAsInProgressAsync(@event.Id);
         _eventBus.Publish(@event.IntegrationEvent!); // after GetEventLogsAwaitingToPublishAsync() it's not null
-        await eventService.MarkEventAsPublishedAsync(@event.EventId);
+        await eventService.MarkEventAsPublishedAsync(@event.Id);
       }
       catch (Exception ex)
       {
-        _logger.LogError(ex, "Error publishing integration event: {IntegrationEventId}", @event.EventId);
+        _logger.LogError(ex, "Error publishing integration event: {IntegrationEventId}", @event.Id);
 
-        await eventService.MarkEventAsFailedAsync(@event.EventId);
+        await eventService.MarkEventAsFailedAsync(@event.Id);
       }
     }
   }
 
-  private async Task PublishIntegrationEvents(IEnumerable<PublishContent> publishContents, IIntegrationEventLogPersistence eventService)
+  protected virtual async Task PublishIntegrationEvents(
+    IEnumerable<PublishContent> publishContents, IIntegrationEventLogPersistence eventService)
   {
     if (!publishContents.Any())
     {

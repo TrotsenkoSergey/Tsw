@@ -5,7 +5,7 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
   protected readonly List<Type> _eventTypes;
   protected readonly IDocumentStore _store;
 
-  public IntegrationEventLogService(IDocumentStore store, OutboxSettings outboxSettings)
+  public IntegrationEventLogService(IDocumentStore store, LogSettings outboxSettings)
   {
     _store = store;
     _eventTypes = Assembly
@@ -19,10 +19,12 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
   {
     using var session = _store.QuerySession();
 
-    return await session.Query<IntegrationEventLog>()
+    var result = await session.Query<IntegrationEventLog>()
         .Where(e => e.State == IntegrationEventState.NotPublished)
-        .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!))
         .ToListAsync();
+
+    return result
+        .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
   }
 
   public virtual async Task<IEnumerable<PublishContent>> GetEventLogsAwaitingToPublishInJsonAsync()
@@ -33,23 +35,23 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
       .Where(e => e.State == IntegrationEventState.NotPublished)
       .ToListAsync();
 
-    return logs.Select(log => new PublishContent(log.EventId, log.Content, log.EventTypeName));
+    return logs.Select(log => new PublishContent(log.Id, log.Content, log.EventTypeShortName));
   }
 
   public virtual Task MarkEventAsPublishedAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, IntegrationEventState.Published);
+    UpdateEventStatusAsync(eventId, IntegrationEventState.Published);
 
   public virtual Task MarkEventAsInProgressAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, IntegrationEventState.InProgress);
+    UpdateEventStatusAsync(eventId, IntegrationEventState.InProgress);
 
   public virtual Task MarkEventAsFailedAsync(Guid eventId) =>
-    UpdateEventStatus(eventId, IntegrationEventState.PublishedFailed);
+    UpdateEventStatusAsync(eventId, IntegrationEventState.PublishedFailed);
 
-  protected virtual async Task UpdateEventStatus(Guid eventId, IntegrationEventState status)
+  protected virtual async Task UpdateEventStatusAsync(Guid eventId, IntegrationEventState status)
   {
     using var session = await _store.LightweightSerializableSessionAsync();
 
-    var eventLogEntry = await session.Query<IntegrationEventLog>().FirstAsync(e => e.EventId == eventId);
+    var eventLogEntry = await session.Query<IntegrationEventLog>().FirstAsync(e => e.Id == eventId);
     eventLogEntry.State = status;
 
     if (status == IntegrationEventState.InProgress)

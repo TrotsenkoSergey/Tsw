@@ -64,7 +64,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
 
             modelBuilder.Entity("Tsw.EventBus.Outbox.Common.IntegrationEventLog", b =>
                 {
-                    b.Property<Guid>("EventId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -86,7 +86,7 @@ namespace Tsw.EventBus.Outbox.EFCore.Migrations
                     b.Property<int>("TimesSent")
                         .HasColumnType("integer");
 
-                    b.HasKey("EventId");
+                    b.HasKey("Id");
 
                     b.ToTable("IntegrationEventLogs", (string)null);
                 });
