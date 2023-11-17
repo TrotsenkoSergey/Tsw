@@ -1,5 +1,5 @@
 ﻿namespace Tsw.EventBus.Outbox.Marten;
 
-public record LogSettings(
+public record EventLogSettings(
   string AssemblyFullNameWhereIntegrationEventsStore
 );

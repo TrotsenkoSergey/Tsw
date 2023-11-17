@@ -1,22 +1,34 @@
-﻿namespace Tsw.EventBus.RabbitMQ;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Unicode;
+
+namespace Tsw.EventBus.RabbitMQ;
 
 public static class DependencyInjection
 {
   public static IServiceCollection AddRabbitMQEventBus(
       this IServiceCollection services, IConfiguration configuration)
   {
-    RabbitMQConfuguration rabbitConf = new();
-    configuration.GetSection(nameof(RabbitMQConfuguration)).Bind(rabbitConf);
+    var options = configuration
+      .GetRequiredSection(RabbitMQConfuguration.SectionName)
+      .Get<RabbitMQConfuguration>()!;
     services.Configure<RabbitMQConfuguration>((conf) =>
     {
-      conf.HostName = rabbitConf.HostName;
-      conf.Port = rabbitConf.Port;
-      conf.UserName = rabbitConf.UserName;
-      conf.Password = rabbitConf.Password;
-      conf.RetryCount = rabbitConf.RetryCount;
-      conf.ClientProvidedName = rabbitConf.ClientProvidedName;
-      conf.ExchangeName = rabbitConf.ExchangeName;
-      conf.QueueName = rabbitConf.QueueName;
+      conf.HostName = options.HostName;
+      conf.Port = options.Port;
+      conf.UserName = options.UserName;
+      conf.Password = options.Password;
+      conf.RetryCount = options.RetryCount;
+      conf.ClientProvidedName = options.ClientProvidedName;
+      conf.ExchangeName = options.ExchangeName;
+      conf.QueueName = options.QueueName;
+    });
+
+    services.Configure<JsonSerializerOptions>((opt) =>
+    {
+      opt.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+      opt.Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic);
+      opt.PropertyNameCaseInsensitive = true;
     });
 
     services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>(sp =>
@@ -63,27 +75,7 @@ public static class DependencyInjection
     });
 
     services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
-
-    services.AddSingleton<IEventBus, RabbitMQEventBus>(serviceProvider =>
-    {
-      var conf = serviceProvider
-              .GetRequiredService<IOptionsMonitor<RabbitMQConfuguration>>().CurrentValue;
-      var rabbitMQPersistentConnection = serviceProvider
-              .GetRequiredService<IRabbitMQPersistentConnection>();
-      var logger = serviceProvider.GetRequiredService<ILogger<RabbitMQEventBus>>();
-      var eventBusSubcriptionsManager = serviceProvider
-              .GetRequiredService<IEventBusSubscriptionsManager>();
-
-      if (!conf.RetryCount.Equals(default))
-      {
-        return new RabbitMQEventBus(logger, rabbitMQPersistentConnection,
-                serviceProvider, eventBusSubcriptionsManager,
-                conf.ExchangeName, conf.QueueName, conf.RetryCount);
-      }
-
-      return new RabbitMQEventBus(logger, rabbitMQPersistentConnection,
-              serviceProvider, eventBusSubcriptionsManager, conf.ExchangeName, conf.QueueName);
-    });
+    services.AddSingleton<IEventBus, RabbitMQEventBus>();
 
     return services;
   }

@@ -1,13 +1,19 @@
-﻿namespace Tsw.EventBus.Outbox.EFCore;
+﻿using System.Text.Json;
+
+using Microsoft.Extensions.Options;
+
+namespace Tsw.EventBus.Outbox.EFCore;
 
 public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransactional
 {
   protected readonly List<Type> _eventTypes;
   protected readonly IntegrationEventLogDbContext _context;
+  private readonly JsonSerializerOptions _jsonSerializerOptions;
 
   public IntegrationEventLogService(
-    LogSettings outboxSettings,
-    IntegrationEventLogDbContext context)
+    EventLogSettings outboxSettings,
+    IntegrationEventLogDbContext context,
+    IOptions<JsonSerializerOptions> jsonSerializerOptions)
   {
     _eventTypes = Assembly
         .Load(outboxSettings.AssemblyFullNameWhereIntegrationEventsStore)
@@ -16,6 +22,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
         .ToList();
 
     _context = context;
+    _jsonSerializerOptions = jsonSerializerOptions.Value;
   }
 
   public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()
@@ -28,7 +35,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
     }
 
     return result.OrderBy(e => e.CreatedOnUtc)
-        .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
+        .Select(e => DeserializeJsonContent(e, _eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
   }
 
   public virtual async Task<IEnumerable<PublishContent>> GetEventLogsAwaitingToPublishInJsonAsync()
@@ -41,11 +48,13 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
     }
 
     return result.OrderBy(e => e.CreatedOnUtc)
-        .Select(e => new PublishContent(e.Id, e.Content, e.EventTypeShortName));
+        .Select(e => new PublishContent(e.Id, e.Content!, e.EventTypeShortName));
   }
 
   protected virtual Task<List<IntegrationEventLog>> GetNotPublishedEvents() =>
-    _context.Set<IntegrationEventLog>().Where(e => e.State == IntegrationEventState.NotPublished).ToListAsync();
+    _context.Set<IntegrationEventLog>()
+      .Where(e => e.State == IntegrationEventState.NotPublished)
+      .ToListAsync();
 
   public virtual Task SaveEventWithAsync(DbTransaction currentTransaction, IntegrationEvent @event)
   {
@@ -59,7 +68,18 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
 
   public virtual Task SaveEventAsync(IntegrationEvent @event)
   {
-    var eventLogEntry = new IntegrationEventLog(@event);
+    Type eventType = @event.GetType();
+    var eventLogEntry = new IntegrationEventLog()
+    {
+      Id = @event.Id,
+      IntegrationEvent = @event,
+      Content = SerializeJsonContent(@event, eventType),
+      CreatedOnUtc = @event.CreationDate,
+      State = IntegrationEventState.NotPublished,
+      TimesSent = 0,
+      EventTypeName = eventType.FullName!
+    };
+    
     _context.Set<IntegrationEventLog>().Add(eventLogEntry);
 
     return _context.SaveChangesAsync();
@@ -87,4 +107,21 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
 
     return _context.SaveChangesAsync();
   }
+
+  private IntegrationEventLog DeserializeJsonContent(IntegrationEventLog eventLog, Type type)
+  {
+    if (eventLog.Content is null)
+    {
+      throw new NullReferenceException(nameof(eventLog.Content));
+    }
+
+    eventLog.IntegrationEvent = 
+      JsonSerializer.Deserialize(eventLog.Content, type, _jsonSerializerOptions) as IntegrationEvent ??
+        throw new JsonException($"Can't deserialize {type.FullName} integration event.");
+
+    return eventLog;
+  }
+
+  private string SerializeJsonContent(IntegrationEvent @event, Type type) => 
+    JsonSerializer.Serialize(@event, type, _jsonSerializerOptions);
 }

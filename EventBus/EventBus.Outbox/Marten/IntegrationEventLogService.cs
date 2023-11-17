@@ -5,7 +5,7 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
   protected readonly List<Type> _eventTypes;
   protected readonly IDocumentStore _store;
 
-  public IntegrationEventLogService(IDocumentStore store, LogSettings outboxSettings)
+  public IntegrationEventLogService(IDocumentStore store, EventLogSettings outboxSettings)
   {
     _store = store;
     _eventTypes = Assembly
@@ -17,29 +17,23 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
 
   public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()
   {
-    using var session = _store.QuerySession();
+    using var session = await _store.QuerySerializableSessionAsync();
 
     var result = await session.Query<IntegrationEventLog>()
-        .Where(e => e.State == IntegrationEventState.NotPublished)
-        .ToListAsync();
+      .Where(e => e.State == IntegrationEventState.NotPublished)
+      .ToListAsync();
 
-    return result
-        .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)!));
+    return result;
   }
 
   public virtual async Task<IEnumerable<PublishContent>> GetEventLogsAwaitingToPublishInJsonAsync()
   {
-    using var session = _store.QuerySession();
-
-    var logs = await session.Query<IntegrationEventLog>()
-      .Where(e => e.State == IntegrationEventState.NotPublished)
-      .ToListAsync();
-
-    return logs.Select(log => new PublishContent(log.Id, log.Content, log.EventTypeShortName));
+    var result = await GetEventLogsAwaitingToPublishAsync();
+    return result.Select(log => new PublishContent(log.Id, log.Content!, log.EventTypeShortName));
   }
 
   public virtual Task MarkEventAsPublishedAsync(Guid eventId) =>
-    UpdateEventStatusAsync(eventId, IntegrationEventState.Published);
+      UpdateEventStatusAsync(eventId, IntegrationEventState.Published);
 
   public virtual Task MarkEventAsInProgressAsync(Guid eventId) =>
     UpdateEventStatusAsync(eventId, IntegrationEventState.InProgress);
@@ -64,9 +58,18 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
 
   public virtual async Task SaveEventAsync(IntegrationEvent @event)
   {
-    using var session = await _store.LightweightSerializableSessionAsync();
+    Type eventType = @event.GetType();
+    var eventLogEntry = new IntegrationEventLog()
+    {
+      Id = @event.Id,
+      CreatedOnUtc = @event.CreationDate,
+      IntegrationEvent = @event,
+      State = IntegrationEventState.NotPublished,
+      TimesSent = 0,
+      EventTypeName = eventType.FullName!,
+    };
 
-    var eventLogEntry = new IntegrationEventLog(@event);
+    using var session = await _store.LightweightSerializableSessionAsync();
     session.Store(eventLogEntry);
 
     await session.SaveChangesAsync();

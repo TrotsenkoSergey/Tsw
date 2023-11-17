@@ -23,7 +23,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistenceTransactional>();
     await eventService.SaveEventWithAsync(transaction, @event);
 
-    await ActivateBackGroundTasksAsync();
+    await ActivateBackGroundTasksAsync(inJson: true);
   }
 
   public virtual async Task AddAndSaveEventAsync(IntegrationEvent @event)
@@ -33,13 +33,15 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistence>();
     await eventService.SaveEventAsync(@event);
 
-    await ActivateBackGroundTasksAsync();
+    await ActivateBackGroundTasksAsync(inJson: false);
   }
 
-  protected virtual async Task ActivateBackGroundTasksAsync()
+  protected virtual async Task ActivateBackGroundTasksAsync(bool inJson)
   {
     var factory = _serviceProvider.GetRequiredService<ISchedulerFactory>();
     var backgroundTasks = await factory.GetScheduler();
+    IDictionary<string, object> dict = new Dictionary<string, object>() { { "inJson", inJson } };
+    var data = new JobDataMap(dict);
     await backgroundTasks.TriggerJob(new JobKey(nameof(ProcessOutboxMessagesJob)));
   }
 
@@ -66,7 +68,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
       return;
     }
 
-    _logger.LogInformation("Got {count} integration events.", integrationEvents.Count());
+    _logger.LogInformation("Got {count} integration events as object.", integrationEvents.Count());
 
     foreach (var @event in integrationEvents)
     {
@@ -95,7 +97,7 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
       return;
     }
 
-    _logger.LogInformation("Got {count} integration events.", publishContents.Count());
+    _logger.LogInformation("Got {count} integration events as json string.", publishContents.Count());
 
     foreach (var publishContent in publishContents)
     {

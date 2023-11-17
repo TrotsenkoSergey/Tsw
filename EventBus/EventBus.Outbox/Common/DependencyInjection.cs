@@ -1,4 +1,6 @@
-﻿namespace Tsw.EventBus.Outbox.Common;
+﻿using System.Text.Json.Serialization;
+
+namespace Tsw.EventBus.Outbox.Common;
 
 public static class DependencyInjection
 {
@@ -8,6 +10,8 @@ public static class DependencyInjection
     services.AddScoped<IIntegrationEventOutboxService>(sp => sp.GetRequiredService<IIntegrationEventOutboxTransactional>());
 
     services.AddQuartzJobs();
+
+
 
     return services;
   }

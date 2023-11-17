@@ -2,6 +2,7 @@
 
 public class RabbitMQConfuguration
 {
+  public const string SectionName = nameof(RabbitMQConfuguration);
   public string? HostName { get; set; } // by default "localhost"
   public int Port { get; set; } // by default 5672
   public string? UserName { get; set; } // by default "guest"

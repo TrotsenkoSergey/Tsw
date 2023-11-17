@@ -4,7 +4,7 @@
     <Title>
       Outbox EntityFramework Core integration events services implementation.
     </Title>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
     <Description>
       Support atomicity and resiliency when publishing integration events throw event bus.
       Create and support table in single DB with integration events.

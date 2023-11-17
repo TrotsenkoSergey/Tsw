@@ -4,7 +4,7 @@
     <Title>
       Outbox integration events common abstractions for implementation.
     </Title>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
     <Description>
       Contains atomicity and resiliency when publishing integration events throw event bus.
       Support transactional table to store the integration events.

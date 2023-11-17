@@ -3,5 +3,5 @@
 public interface IIntegrationEventOutboxService
 {
   Task AddAndSaveEventAsync(IntegrationEvent @event);
-  Task GetAndPublishEventsThroughEventBusAsync(bool withoutAdditionalSerialization = false);
+  Task GetAndPublishEventsThroughEventBusAsync(bool withoutAdditionalSerialization);
 }

@@ -1,8 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace Tsw.EventBus.IntegrationEvents;
 
-namespace Tsw.EventBus.IntegrationEvents;
-
-public record IntegrationEvent
+public record class IntegrationEvent
 {
   public IntegrationEvent()
   {
@@ -10,16 +8,7 @@ public record IntegrationEvent
     CreationDate = DateTime.UtcNow;
   }
 
-  [JsonConstructor]
-  public IntegrationEvent(Guid id, DateTime createDate)
-  {
-    Id = id;
-    CreationDate = createDate;
-  }
+  public Guid Id { get; set; }
 
-  [JsonInclude]
-  public Guid Id { get; private init; }
-
-  [JsonInclude]
-  public DateTime CreationDate { get; private init; }
+  public DateTime CreationDate { get; set; }
 }

@@ -5,7 +5,7 @@
       Abstraction EventBus services (Subscribe, Publish, Handle event) 
       and subscription manager.
     </Title>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
     <Description>
       Base IEventBus service with Publish and Subscribe functions.
       IEventHandler abstraction services (with dynamic support).

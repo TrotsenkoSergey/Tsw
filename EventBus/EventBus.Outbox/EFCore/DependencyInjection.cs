@@ -1,4 +1,9 @@
-﻿namespace Tsw.EventBus.Outbox.EFCore;
+﻿using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Text.Unicode;
+
+namespace Tsw.EventBus.Outbox.EFCore;
 
 public static class DependencyInjection
 {
@@ -48,9 +53,19 @@ public static class DependencyInjection
   {
     services.AddCommonOutboxServices();
 
-    services.AddSingleton(new LogSettings(assemblyFullNameWhereIntegrationEventsStore));
+    services.AddSingleton(new EventLogSettings(assemblyFullNameWhereIntegrationEventsStore));
     services.AddTransient<IIntegrationEventLogPersistenceTransactional, IntegrationEventLogService>();
     services.AddTransient<IIntegrationEventLogPersistence>(sp => sp.GetRequiredService<IIntegrationEventLogPersistenceTransactional>());
+
+    services.AddOptions<JsonSerializerOptions>()
+    .Configure(opt =>
+    {
+      var encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic);
+
+      opt.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+      opt.Encoder = encoder;
+      opt.PropertyNameCaseInsensitive = true;
+    });
 
     return services;
   }

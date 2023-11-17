@@ -1,48 +1,43 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Unicode;
-
-using Microsoft.Extensions.Logging;
-
-namespace Tsw.EventBus.RabbitMQ;
+﻿namespace Tsw.EventBus.RabbitMQ;
 
 public class RabbitMQEventBus : IEventBus, IDisposable
 {
   private const int DEFAULT_RETRY_COUNT = 5;
   private readonly int _retryCount;
-
   private readonly ILogger<RabbitMQEventBus> _logger;
   private readonly IRabbitMQPersistentConnection _persistentConnection;
   private readonly IEventBusSubscriptionsManager _subsManager;
-  private readonly IServiceProvider _serviceProvider;
-
-  private IModel _consumerChannel;
-  private readonly string _exchangeName;
-  private string _queueName;
-
+  private readonly RabbitMQConfuguration _rabbitOptions;
   private readonly JsonSerializerOptions _jsonOptions;
+  private readonly IServiceScopeFactory _serviceScopeFactory;
+  private IModel _consumerChannel;
 
   public RabbitMQEventBus(
       ILogger<RabbitMQEventBus> logger,
       IRabbitMQPersistentConnection persistentConnection,
-      IServiceProvider serviceProvider,
+      IServiceScopeFactory serviceScopeFactory,
       IEventBusSubscriptionsManager subsManager,
-      string exchangeName,
-      string queueName,
-      int retryCount = DEFAULT_RETRY_COUNT)
+      IOptionsMonitor<JsonSerializerOptions> jsonOptions,
+      IOptionsMonitor<RabbitMQConfuguration> rabbitOptions)
   {
     ArgumentNullException.ThrowIfNull(logger);
     ArgumentNullException.ThrowIfNull(persistentConnection);
-    ArgumentNullException.ThrowIfNull(serviceProvider);
+    ArgumentNullException.ThrowIfNull(serviceScopeFactory);
+    ArgumentNullException.ThrowIfNull(subsManager);
+    ArgumentNullException.ThrowIfNull(jsonOptions);
+    ArgumentNullException.ThrowIfNull(rabbitOptions);
+
     _logger = logger;
     _persistentConnection = persistentConnection;
-    _serviceProvider = serviceProvider;
-    _subsManager = subsManager ?? new InMemoryEventBusSubscriptionsManager();
-    _exchangeName = exchangeName;
-    _queueName = queueName;
-    _retryCount = retryCount;
-    _consumerChannel = CreateConsumerChannel();
+    _serviceScopeFactory = serviceScopeFactory;
+    _subsManager = subsManager;
     _subsManager.OnEventRemoved += SubsManager_OnEventRemoved;
-    _jsonOptions = CreateJsonOptions();
+    _jsonOptions = jsonOptions.CurrentValue;
+    _rabbitOptions = rabbitOptions.CurrentValue;
+    _retryCount = _rabbitOptions.RetryCount == default
+      ? DEFAULT_RETRY_COUNT
+      : _rabbitOptions.RetryCount;
+    _consumerChannel = CreateConsumerChannel();
   }
 
   private void SubsManager_OnEventRemoved(object? sender, string eventName)
@@ -53,13 +48,13 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     }
 
     using var channel = _persistentConnection.CreateModel();
-    channel.QueueUnbind(queue: _queueName,
-        exchange: _exchangeName,
+    channel.QueueUnbind(queue: _rabbitOptions.QueueName,
+        exchange: _rabbitOptions.ExchangeName,
         routingKey: eventName);
 
     if (_subsManager.IsEmpty)
     {
-      _queueName = string.Empty;
+      _rabbitOptions.QueueName = string.Empty;
       _consumerChannel.Close();
     }
   }
@@ -85,10 +80,12 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       _persistentConnection.TryConnect();
     }
 
+    int retryCount = _rabbitOptions.RetryCount == default ? DEFAULT_RETRY_COUNT : _rabbitOptions.RetryCount;
+
     var policy = RetryPolicy
         .Handle<BrokerUnreachableException>()
         .Or<SocketException>()
-        .WaitAndRetry(_retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
+        .WaitAndRetry(retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
         {
           _logger.LogWarning(ex, "Could not publish event: {EventId} after {Timeout}s ({ExceptionMessage})", eventId, $"{time.TotalSeconds:n1}", ex.Message);
         });
@@ -97,7 +94,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     using var channel = _persistentConnection.CreateModel();
 
     _logger.LogTrace("Declaring RabbitMQ exchange to publish event: {EventId}", eventId);
-    channel.ExchangeDeclare(exchange: _exchangeName, type: ExchangeType.Direct);
+    channel.ExchangeDeclare(exchange: _rabbitOptions.ExchangeName, type: ExchangeType.Direct);
 
     policy.Execute(() =>
     {
@@ -107,7 +104,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       _logger.LogTrace("Publishing event to RabbitMQ: {EventId}", eventId);
 
       channel.BasicPublish(
-              exchange: _exchangeName,
+              exchange: _rabbitOptions.ExchangeName,
               routingKey: eventTypeName,
               mandatory: true,
               basicProperties: properties,
@@ -148,8 +145,8 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         _persistentConnection.TryConnect();
       }
 
-      _consumerChannel.QueueBind(queue: _queueName,
-                          exchange: _exchangeName,
+      _consumerChannel.QueueBind(queue: _rabbitOptions.QueueName,
+                          exchange: _rabbitOptions.ExchangeName,
                           routingKey: eventName);
     }
   }
@@ -192,7 +189,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       consumer.Received += Consumer_Received;
 
       _consumerChannel.BasicConsume(
-          queue: _queueName,
+          queue: _rabbitOptions.QueueName,
           autoAck: false,
           consumer: consumer);
     }
@@ -205,10 +202,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
   private async Task Consumer_Received(object sender, BasicDeliverEventArgs e)
   {
     string eventName = e.RoutingKey;
-    var eventType = _subsManager.GetEventTypeByName(eventName);
-
-    var objectFromBody = JsonSerializer.Deserialize(e.Body.Span, eventType, _jsonOptions);
-    string jsonMessage = JsonSerializer.Serialize(objectFromBody, eventType, _jsonOptions);
+    string jsonMessage = Encoding.UTF8.GetString(e.Body.Span);
 
     try
     {
@@ -217,7 +211,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         throw new InvalidOperationException($"Fake exception requested: \"{jsonMessage}\"");
       }
 
-      await ProcessEvent(eventName, jsonMessage);
+      await ProcessEvent(eventName, e.Body);
     }
     catch (Exception ex)
     {
@@ -241,10 +235,10 @@ public class RabbitMQEventBus : IEventBus, IDisposable
 
     var channel = _persistentConnection.CreateModel();
 
-    channel.ExchangeDeclare(exchange: _exchangeName,
+    channel.ExchangeDeclare(exchange: _rabbitOptions.ExchangeName,
                             type: ExchangeType.Direct);
 
-    channel.QueueDeclare(queue: _queueName,
+    channel.QueueDeclare(queue: _rabbitOptions.QueueName,
                          durable: true,
                          exclusive: false,
                          autoDelete: false,
@@ -262,37 +256,39 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     return channel;
   }
 
-  private async Task ProcessEvent(string eventName, string message)
+  private async Task ProcessEvent(string eventName, ReadOnlyMemory<byte> body)
   {
     _logger.LogTrace("Processing RabbitMQ event: {EventName}", eventName);
 
     if (_subsManager.HasSubscriptionsForEvent(eventName))
     {
-      using IServiceScope scope = _serviceProvider.CreateScope();
+      using IServiceScope scope = _serviceScopeFactory.CreateScope();
       var subscriptions = _subsManager.GetHandlersForEvent(eventName);
       foreach (var subscription in subscriptions)
       {
-        object handler = scope.ServiceProvider.GetRequiredService(subscription.HandlerType);
+        object? handler = scope.ServiceProvider.GetService(subscription.HandlerType);
+
         if (subscription.IsDynamic)
         {
           if (handler is not IDynamicIntegrationEventHandler dynamicHandler) continue;
-          using dynamic eventData = JsonDocument.Parse(message);
+          using dynamic eventData = JsonDocument.Parse(body);
           await Task.Yield();
           await dynamicHandler.Handle(eventData);
+          continue;
         }
-        else
+
+        if (handler == null)
         {
-          if (handler == null) continue;
-          var eventType = _subsManager.GetEventTypeByName(eventName);
-          object? integrationEvent = JsonSerializer.Deserialize(message, eventType, _jsonOptions);
-
-          Type concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
-
-          await Task.Yield();
-          await (Task)concreteType
-              .GetMethod("Handle")
-              .Invoke(handler, new object[] { integrationEvent });
+          continue;
         }
+
+        var eventType = _subsManager.GetEventTypeByName(eventName);
+        object? integrationEvent = JsonSerializer.Deserialize(body.Span, eventType, _jsonOptions);
+
+        Type concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
+
+        await Task.Yield();
+        await (Task)concreteType.GetMethod("Handle")!.Invoke(handler, new object[] { integrationEvent });
       }
     }
     else
@@ -300,12 +296,4 @@ public class RabbitMQEventBus : IEventBus, IDisposable
       _logger.LogWarning("No subscription for RabbitMQ event: {EventName}", eventName);
     }
   }
-
-  private JsonSerializerOptions CreateJsonOptions() =>
-    new()
-    {
-      WriteIndented = true,
-      Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-      PropertyNameCaseInsensitive = true
-    };
 }
