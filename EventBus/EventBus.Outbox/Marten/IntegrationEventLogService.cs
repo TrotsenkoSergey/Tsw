@@ -2,18 +2,10 @@
 
 internal class IntegrationEventLogService : IIntegrationEventLogPersistence
 {
-  protected readonly List<Type> _eventTypes;
   protected readonly IDocumentStore _store;
 
-  public IntegrationEventLogService(IDocumentStore store, EventLogSettings outboxSettings)
-  {
+  public IntegrationEventLogService(IDocumentStore store) =>
     _store = store;
-    _eventTypes = Assembly
-        .Load(outboxSettings.AssemblyFullNameWhereIntegrationEventsStore)
-        .GetTypes()
-        .Where(t => t.Name.EndsWith(nameof(IntegrationEvent)))
-        .ToList();
-  }
 
   public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()
   {
@@ -45,7 +37,13 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
   {
     using var session = await _store.LightweightSerializableSessionAsync();
 
-    var eventLogEntry = await session.Query<IntegrationEventLog>().FirstAsync(e => e.Id == eventId);
+    var eventLogEntry = await session.LoadAsync<IntegrationEventLog>(eventId);
+
+    if (eventLogEntry is null) 
+    {
+      throw new InvalidOperationException($"Cant find log entry with id - {eventId}");
+    }
+
     eventLogEntry.State = status;
 
     if (status == IntegrationEventState.InProgress)
