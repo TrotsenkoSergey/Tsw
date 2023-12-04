@@ -1,11 +1,15 @@
 ﻿namespace Tsw.EventBus.Outbox.Marten;
 
-internal class IntegrationEventLogService : IIntegrationEventLogPersistence
+internal class IntegrationEventLogService : IIntegrationEventLogPersistenceTransactional
 {
+  protected readonly ILogger<IntegrationEventLogService> _logger;
   protected readonly IDocumentStore _store;
 
-  public IntegrationEventLogService(IDocumentStore store) =>
+  public IntegrationEventLogService(ILogger<IntegrationEventLogService> logger, IDocumentStore store)
+  {
+    _logger = logger;
     _store = store;
+  }
 
   public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()
   {
@@ -39,7 +43,7 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
 
     var eventLogEntry = await session.LoadAsync<IntegrationEventLog>(eventId);
 
-    if (eventLogEntry is null) 
+    if (eventLogEntry is null)
     {
       throw new InvalidOperationException($"Cant find log entry with id - {eventId}");
     }
@@ -54,7 +58,28 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
     await session.SaveChangesAsync();
   }
 
-  public virtual async Task SaveEventAsync(IntegrationEvent @event)
+  public virtual Task SaveEventAsync(IntegrationEvent @event)
+  {
+    var eventLogEntry = CreateIntegrationEventLog(@event);
+
+    return PersistEventLog(eventLogEntry);
+  }
+
+  public virtual Task SaveEventWithAsync(DbTransaction currentTransaction, IntegrationEvent @event)
+  {
+    var transaction = currentTransaction as NpgsqlTransaction;
+    if (transaction is null)
+    {
+      throw new MartenException($"Transaction have to be {nameof(NpgsqlTransaction)}.");
+    }
+
+    var eventLogEntry = CreateIntegrationEventLog(@event);
+
+    var sessionOptions = SessionOptions.ForTransaction(transaction);
+    return PersistEventLog(eventLogEntry, sessionOptions);
+  }
+
+  protected virtual IntegrationEventLog CreateIntegrationEventLog(IntegrationEvent @event)
   {
     Type eventType = @event.GetType();
     var eventLogEntry = new IntegrationEventLog()
@@ -67,9 +92,28 @@ internal class IntegrationEventLogService : IIntegrationEventLogPersistence
       EventTypeName = eventType.FullName!,
     };
 
-    using var session = await _store.LightweightSerializableSessionAsync();
-    session.Store(eventLogEntry);
+    return eventLogEntry;
+  }
 
-    await session.SaveChangesAsync();
+  protected virtual async Task PersistEventLog(IntegrationEventLog eventLog, SessionOptions? sessionOptions = default)
+  {
+    IDocumentSession session = default!;
+    try
+    {
+      session = sessionOptions is not null
+        ? await _store.LightweightSerializableSessionAsync(sessionOptions)
+        : await _store.LightweightSerializableSessionAsync();
+
+      session.Store(eventLog);
+      await session.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Can not persist integration event {event}, because {exeption}.", eventLog, ex.Message);
+    }
+    finally
+    {
+      session?.Dispose();
+    }
   }
 }

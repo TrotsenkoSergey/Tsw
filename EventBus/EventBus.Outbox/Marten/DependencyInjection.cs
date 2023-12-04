@@ -15,7 +15,6 @@ public static class DependencyInjection
 
         options.UseDefaultSerialization(EnumStorage.AsString, Casing.SnakeCase);
 
-        options.AutoCreateSchemaObjects = AutoCreate.All;
         options.DatabaseSchemaName = "public";
         options.Events.DatabaseSchemaName = "public";
 
@@ -29,7 +28,8 @@ public static class DependencyInjection
   private static IServiceCollection AddOutboxServices(this IServiceCollection services)
   {
     services.AddCommonOutboxServices();
-    services.AddTransient<IIntegrationEventLogPersistence, IntegrationEventLogService>();
+    services.AddTransient<IIntegrationEventLogPersistenceTransactional, IntegrationEventLogService>();
+    services.AddTransient<IIntegrationEventLogPersistence>(sp => sp.GetRequiredService<IIntegrationEventLogPersistenceTransactional>());
 
     return services;
   }

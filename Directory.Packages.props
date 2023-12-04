@@ -10,11 +10,9 @@
     <PackageVersion Include="MediatR" Version="12.0.1" />
     <PackageVersion Include="Quartz" Version="3.7.0" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.7.0" />
-    <PackageVersion Include="Tsw.EventBus.IntegrationEvents" Version="1.0.0" />
-    <!--package from this library-->
+    <PackageVersion Include="Tsw.EventBus.IntegrationEvents" Version="1.0.0" /><!--package from this library-->
     <!--EventBus.RabbitMQ-->
-    <PackageVersion Include="Tsw.EventBus.Common" Version="1.0.0" />
-    <!--package from this library-->
+    <PackageVersion Include="Tsw.EventBus.Common" Version="1.0.0" /><!--package from this library-->
     <PackageVersion Include="Autofac" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
@@ -23,12 +21,11 @@
     <!--EventBus.Outbox-->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.2" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
-    <PackageVersion Include="Tsw.EventBus.Outbox.Common" Version="1.0.0" />
+    <PackageVersion Include="Tsw.EventBus.Outbox.Common" Version="1.0.0" /><!--package from this library-->
     <PackageVersion Include="Marten" Version="6.0.5" />
     <!--Repository.EFcore-->
-    <PackageVersion Include="Tsw.Repository.Abstractions" Version="1.0.0" />
-    <!--package from this library-->
+    <PackageVersion Include="Tsw.Repository.Abstractions" Version="1.0.0" /><!--package from this library-->
   </ItemGroup>
 </Project>
