@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Tsw.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
 </Project>

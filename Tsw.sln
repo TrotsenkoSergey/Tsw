@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
+		.github\workflows\main.yml = .github\workflows\main.yml
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
@@ -32,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository.EFCore", "Reposi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Common", "EventBus\EventBus.Outbox\Common\EventBus.Outbox.Common.csproj", "{4D8AD4D1-64D9-4E32-B1D0-AA13F0B06384}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus.Outbox.Marten", "EventBus\EventBus.Outbox\Marten\EventBus.Outbox.Marten.csproj", "{353C989E-ED6C-4651-9808-4585FA871E68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Marten", "EventBus\EventBus.Outbox\Marten\EventBus.Outbox.Marten.csproj", "{353C989E-ED6C-4651-9808-4585FA871E68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

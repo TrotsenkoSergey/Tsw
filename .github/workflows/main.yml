@@ -23,7 +23,7 @@ jobs:
         
       - name: Package
         run: >
-          echo 'github.ref_name=${{ github.ref_name }}'
+          echo 'github.ref_name=${{ github.ref_name }}' &
           dotnet pack --no-restore --no-build --configuration Release 
           -p:PackageVersion=${{ github.ref_name }} --output .
         
