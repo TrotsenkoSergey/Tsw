@@ -122,7 +122,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     StartBasicConsume();
   }
 
-  public void Subscribe<T, TH>()
+  public void Subscribe<T, TH>(bool autoStartBasicConsume)
       where T : IntegrationEvent
       where TH : IIntegrationEventHandler<T>
   {
@@ -132,7 +132,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     _logger.LogInformation("Subscribing to event {EventName} with {EventHandler}", eventName, typeof(TH).GetGenericTypeName());
 
     _subsManager.AddSubscription<T, TH>();
-    StartBasicConsume();
+    if (autoStartBasicConsume) StartBasicConsume(); 
   }
 
   private void DoInternalSubscription(string eventName)

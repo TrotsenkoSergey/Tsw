@@ -6,7 +6,7 @@ public interface IEventBus
 
   void Publish(PublishContent publishContent);
 
-  void Subscribe<T, TH>()
+  void Subscribe<T, TH>(bool autoStartBasicConsume = true)
       where T : IntegrationEvent
       where TH : IIntegrationEventHandler<T>;
 
