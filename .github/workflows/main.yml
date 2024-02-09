@@ -21,8 +21,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
             
-      - name: Show package dir info
-        run: ls -al ./EventBus/EventBus.Common && {{ github.event.push.paths }}
+      - name: Show valueable info
+        run: >
+          ls -al ./EventBus/EventBus.Common
+          echo "GITHUB_ACTION = ${{ GITHUB_ACTION }}"
+          echo "GITHUB_ACTION_PATH = ${{ GITHUB_ACTION_PATH }}"
+          echo "GITHUB_EVENT_PATH = ${{ GITHUB_EVENT_PATH }}"
+          echo "GITHUB_PATH = ${{ GITHUB_PATH }}"
+          echo "GITHUB_REPOSITORY = ${{ GITHUB_REPOSITORY }}"
 
       - name: Setup NuGet
         run: >
