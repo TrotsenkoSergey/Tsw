@@ -1,34 +1,64 @@
 name: Publish to GitHub nuget package.
 
 on:
-  workflow_dispatch:
+  #workflow_dispatch:
   push:
     branches:
       - master
     paths:
+      - 'EventBus/EventBus.IntegrationEvents/**'
       - 'EventBus/EventBus.Common/**'
 
+env: 
+  REPO_PATH: "empty"
+
 jobs:
-  build:
-    name: Build Package
+  buildPublish:
+    name: Build and publish nuget package.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
       
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-            
-      - name: Show valueable info
-        run: >
-          ls -al ./EventBus/EventBus.Common
-          echo "GITHUB_ACTION = ${{ GITHUB_ACTION }}"
-          echo "GITHUB_ACTION_PATH = ${{ GITHUB_ACTION_PATH }}"
-          echo "GITHUB_EVENT_PATH = ${{ GITHUB_EVENT_PATH }}"
-          echo "GITHUB_PATH = ${{ GITHUB_PATH }}"
-          echo "GITHUB_REPOSITORY = ${{ GITHUB_REPOSITORY }}"
+
+      - name: Filter repository paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            EventBusIntegrationEvents: [ 'EventBus/EventBus.IntegrationEvents/**' ]
+            EventBusCommon: [ 'EventBus/EventBus.Common/**' ]
+            EventBusRabbitMQ: [ 'EventBus/EventBus.RabbitMQ/**' ]
+            EventBusOutboxCommon: [ 'EventBus/EventBus.Outbox/Common/**' ]  
+            EventBusOutboxEFCore: [ 'EventBus/EventBus.Outbox/EFCore/**' ]  
+            EventBusOutboxMarten: [ 'EventBus/EventBus.Outbox/Marten/**' ]  
+            RepositoryAbstractions: [ 'Repository/Repository.Abstractions/**' ]  
+            RepositoryEFCore: [ 'Repository/Repository.EFCore/**' ]  
+
+      - if: steps.filter.outputs.EventBusIntegrationEvents == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.IntegrationEvents" >> $GITHUB_ENV
+      - if: steps.filter.outputs.EventBusCommon == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.Common" >> $GITHUB_ENV
+      - if: steps.filter.outputs.EventBusRabbitMQ == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.RabbitMQ" >> $GITHUB_ENV
+      - if: steps.filter.outputs.EventBusOutboxCommon == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.Outbox/Common" >> $GITHUB_ENV
+      - if: steps.filter.outputs.EventBusOutboxEFCore == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.Outbox/EFCore" >> $GITHUB_ENV
+      - if: steps.filter.outputs.EventBusOutboxMarten == 'true'
+        run: echo "REPO_PATH=./EventBus/EventBus.Outbox/Marten" >> $GITHUB_ENV
+      - if: steps.filter.outputs.RepositoryAbstractions == 'true'
+        run: echo "REPO_PATH=./Repository/Repository.Abstractions" >> $GITHUB_ENV
+      - if: steps.filter.outputs.RepositoryEFCore == 'true'
+        run: echo "REPO_PATH=./Repository/Repository.EFCore" >> $GITHUB_ENV
+
+      - name: Show project directory info
+        run: |
+          ls -al $REPO_PATH
 
       - name: Setup NuGet
         run: >
@@ -37,13 +67,13 @@ jobs:
           --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
 
       - name: Restore
-        run: dotnet restore ./EventBus/EventBus.Common
+        run: dotnet restore $REPO_PATH
 
       - name: Build
-        run: dotnet build ./EventBus/EventBus.Common --no-restore --configuration Release
+        run: dotnet build $REPO_PATH --no-restore --configuration Release
         
       - name: Pack
-        run: dotnet pack ./EventBus/EventBus.Common --no-build --configuration Release --output .
+        run: dotnet pack $REPO_PATH --no-build --configuration Release --output .
         
       - name: Publish
         run: >
