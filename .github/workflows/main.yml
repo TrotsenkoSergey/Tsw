@@ -1,10 +1,13 @@
-name: publish to nuget
+name: Publish to GitHub nuget package.
+
 on:
+  workflow_dispatch:
   push:
     branches:
-      - master # Default release branch
+      - master
     paths:
       - 'EventBus/EventBus.Common/**'
+
 jobs:
   build:
     name: Build Package
@@ -18,17 +21,23 @@ jobs:
         with:
           dotnet-version: '8.0.x'
             
+      - name: Show usefull information
+        run: ls -al 
+
+      - name: Setup NuGet
+        run: dotnet nuget add source "https://nuget.pkg.github.com/TrotsenkoSergey/index.json" --name "github" --username "TrotsenkoSergey" --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore ./EventBus/EventBus.Common
+
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build ./EventBus/EventBus.Common --no-restore --configuration Release
         
-      - name: Package
-        run: >
-          echo 'github.ref_name=${{ github.ref_name }}' &
-          dotnet pack --no-restore --no-build --configuration Release 
-          -p:PackageVersion=${{ github.ref_name }} --output .
+      - name: Pack
+        run: dotnet pack ./EventBus/EventBus.Common --no-build --configuration Release --output .
         
       - name: Publish
         run: >
-          dotnet nuget push Tsw.${{ github.ref_name }}.nupkg 
+          dotnet nuget push Tsw.EventBus.Common.nupkg 
           --source https://nuget.pkg.github.com/TrotsenkoSergey/index.json 
           --api-key ${{ secrets.NUGET_API_KEY }}
