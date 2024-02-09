@@ -13,6 +13,12 @@ on:
     paths:
       - 'EventBus/EventBus.IntegrationEvents/**'
       - 'EventBus/EventBus.Common/**'
+      - 'EventBus/EventBus.RabbitMQ/**'
+      - 'EventBus/EventBus.Outbox/Common/**'
+      - 'EventBus/EventBus.Outbox/EFCore/**'
+      - 'EventBus/EventBus.Outbox/Marten/**'
+      - 'Repository/Repository.Abstractions/**'
+      - 'Repository/Repository.EFCore/**'
 
 env: 
   REPO_PATH: "empty"
