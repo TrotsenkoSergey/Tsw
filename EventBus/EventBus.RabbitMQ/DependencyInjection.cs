@@ -1,8 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
-using System.Text.Unicode;
-
-namespace Tsw.EventBus.RabbitMQ;
+﻿namespace Tsw.EventBus.RabbitMQ;
 
 public static class DependencyInjection
 {

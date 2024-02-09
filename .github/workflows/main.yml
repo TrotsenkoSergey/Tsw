@@ -1,5 +1,10 @@
 name: Publish to GitHub nuget package.
 
+env: 
+  REPO_PATH: "empty"
+  EventBus_IntegrationEvents: 'EventBus/EventBus.IntegrationEvents/**'
+  EventBus_Common: 'EventBus/EventBus.Common/**'
+
 on:
   #workflow_dispatch:
   push:

@@ -6,17 +6,17 @@ public interface IEventBus
 
   void Publish(PublishContent publishContent);
 
-  void Subscribe<T, TH>(bool autoStartBasicConsume = true)
-      where T : IntegrationEvent
-      where TH : IIntegrationEventHandler<T>;
+  void Subscribe<TEvent, THandler>(bool autoStartBasicConsume = true)
+      where TEvent : IntegrationEvent
+      where THandler : IIntegrationEventHandler<TEvent>;
 
-  void SubscribeDynamic<TH>(string eventName)
-      where TH : IDynamicIntegrationEventHandler;
+  void SubscribeDynamic<THandler>(string eventName)
+      where THandler : IDynamicIntegrationEventHandler;
 
-  void UnsubscribeDynamic<TH>(string eventName)
-      where TH : IDynamicIntegrationEventHandler;
+  void UnsubscribeDynamic<THandler>(string eventName)
+      where THandler : IDynamicIntegrationEventHandler;
 
-  void Unsubscribe<T, TH>()
-      where TH : IIntegrationEventHandler<T>
-      where T : IntegrationEvent;
+  void Unsubscribe<TEvent, THandler>()
+      where THandler : IIntegrationEventHandler<TEvent>
+      where TEvent : IntegrationEvent;
 }
