@@ -1,13 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <NoWarn>NU5017</NoWarn>
-    </PackageReference>
-  </ItemGroup>
-
+  
   <PropertyGroup>
     <Title>
       Base IntegrationEvent for EventBus.
@@ -18,6 +10,7 @@
       Typicaly use with Tsw.EventBus.Common.
     </Description>
     <PackageTags>IntegrationEvent; EventBus</PackageTags>
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
 </Project>

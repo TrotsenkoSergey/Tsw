@@ -1,6 +1,6 @@
 <Project>
 
-  <!--Common basic .csproj configuration-->
+  <!--Common projects configuration (build before *.csproj files)-->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

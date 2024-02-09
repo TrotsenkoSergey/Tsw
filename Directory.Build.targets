@@ -1,12 +1,15 @@
 <Project>
 
-  <!--Common package configuration (special config into .csproj files)-->
+  <!--Common projects configuration (build after *.csproj files)-->
   <PropertyGroup>
     <PackageId>Tsw.$(MSBuildProjectName.Replace(" ", "_"))</PackageId>
     <Authors>Microsoft, Sergey Trotsenko</Authors>
     <PackageProjectUrl>https://github.com/TrotsenkoSergey/Tsw</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IncludeSymbols)' != 'false'">
     <!--we dont need bellow 2 lines if we link to git repository-->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
