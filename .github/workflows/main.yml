@@ -21,11 +21,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
             
-      - name: Show usefull information
-        run: ls -al 
+      - name: Show package dir info
+        run: ls -al ./EventBus/EventBus.Common && {{ github.event.push.paths }}
 
       - name: Setup NuGet
-        run: dotnet nuget add source "https://nuget.pkg.github.com/TrotsenkoSergey/index.json" --name "github" --username "TrotsenkoSergey" --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
+        run: >
+          dotnet nuget add source "https://nuget.pkg.github.com/TrotsenkoSergey/index.json" 
+          --name github --username TrotsenkoSergey 
+          --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
 
       - name: Restore
         run: dotnet restore ./EventBus/EventBus.Common
@@ -38,6 +41,6 @@ jobs:
         
       - name: Publish
         run: >
-          dotnet nuget push Tsw.EventBus.Common.1.0.0.nupkg 
+          dotnet nuget push *.nupkg 
           --source https://nuget.pkg.github.com/TrotsenkoSergey/index.json 
           --api-key ${{ secrets.NUGET_API_KEY }}
