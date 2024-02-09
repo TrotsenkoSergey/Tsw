@@ -38,6 +38,6 @@ jobs:
         
       - name: Publish
         run: >
-          dotnet nuget push Tsw.EventBus.Common.nupkg 
+          dotnet nuget push Tsw.EventBus.Common.1.0.0.nupkg 
           --source https://nuget.pkg.github.com/TrotsenkoSergey/index.json 
           --api-key ${{ secrets.NUGET_API_KEY }}
