@@ -1,9 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Text.Unicode;
-
-namespace Tsw.EventBus.Outbox.EFCore;
+﻿namespace Tsw.EventBus.Outbox.EFCore;
 
 public static class DependencyInjection
 {
@@ -69,6 +64,4 @@ public static class DependencyInjection
 
     return services;
   }
-
-
 }

@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-
-using Microsoft.Extensions.Options;
-
-namespace Tsw.EventBus.Outbox.EFCore;
+﻿namespace Tsw.EventBus.Outbox.EFCore;
 
 public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransactional
 {
