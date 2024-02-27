@@ -1,0 +1,135 @@
+name: Build and Publish to GitHub nuget package
+
+on:
+  #workflow_dispatch:
+  push:
+    branches: [ master ]
+    paths:
+      - 'EventBus/EventBus.IntegrationEvents/**'
+      - 'EventBus/EventBus.Common/**'
+      - 'EventBus/EventBus.RabbitMQ/**'
+      - 'EventBus/EventBus.Outbox/Common/**'
+      - 'EventBus/EventBus.Outbox/EFCore/**'
+      - 'EventBus/EventBus.Outbox/Marten/**'
+      - 'Repository/Repository.Abstractions/**'
+      - 'Repository/Repository.EFCore/**'
+
+env: 
+  REGISTRY: nuget.pkg.github.com
+  OWNER_NAME: trotsenkosergey
+  DOTNET_VERSION: '8.0.x'
+  MATRIX_OBJECTS: ""
+
+jobs:
+  prepare-matrix:
+    name: Matrix preparation for next job
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Filter repository paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            EventBusIntegrationEvents: [ 'EventBus/EventBus.IntegrationEvents/**' ]
+            EventBusCommon: [ 'EventBus/EventBus.Common/**' ]
+            EventBusRabbitMQ: [ 'EventBus/EventBus.RabbitMQ/**' ]
+            EventBusOutboxCommon: [ 'EventBus/EventBus.Outbox/Common/**' ]  
+            EventBusOutboxEFCore: [ 'EventBus/EventBus.Outbox/EFCore/**' ]  
+            EventBusOutboxMarten: [ 'EventBus/EventBus.Outbox/Marten/**' ]  
+            RepositoryAbstractions: [ 'Repository/Repository.Abstractions/**' ]  
+            RepositoryEFCore: [ 'Repository/Repository.EFCore/**' ]  
+
+      - if: steps.filter.outputs.EventBusIntegrationEvents == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.IntegrationEvents
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.EventBusCommon == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.Common
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.EventBusRabbitMQ == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.RabbitMQ
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.EventBusOutboxCommon == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.Outbox/Common
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.EventBusOutboxEFCore == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.Outbox/EFCore
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.EventBusOutboxMarten == 'true'
+        run: |
+            REPO_PATH=./EventBus/EventBus.Outbox/Marten
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.RepositoryAbstractions == 'true'
+        run: |
+            REPO_PATH=./Repository/Repository.Abstractions
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - if: steps.filter.outputs.RepositoryEFCore == 'true'
+        run: |
+            REPO_PATH=./Repository/Repository.EFCore
+            ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
+            echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
+
+      - name: Move matrix object to output variables
+        id: set-matrix
+        run: echo "matrix={\"include\":[$MATRIX_OBJECTS]}" >> $GITHUB_OUTPUT
+
+  build-and-publish-package:
+    name: Build and publish nuget package
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: $DOTNET_VERSION
+
+      - name: Setup NuGet
+        run: >
+          dotnet nuget add source https://$REGISTRY/$OWNER_NAME/index.json 
+          --name github --username $OWNER_NAME 
+          --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore ${{ matrix.repopath }}
+
+      - name: Build
+        run: dotnet build ${{ matrix.repopath }} --no-restore --configuration Release
+        
+      - name: Pack
+        run: dotnet pack ${{ matrix.repopath }} --no-build --configuration Release --output .
+        
+      - name: Publish
+        run: >
+          dotnet nuget push *.nupkg 
+          --source https://$REGISTRY/$OWNER_NAME/index.json 
+          --api-key ${{ secrets.NUGET_API_KEY }}

@@ -14,10 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
+		.github\workflows\ci.yml = .github\workflows\ci.yml
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
-		.github\workflows\main.yml = .github\workflows\main.yml
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
