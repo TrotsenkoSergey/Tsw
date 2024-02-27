@@ -9,6 +9,7 @@
       Interfaces and common classes for implementing the repository pattern.
     </Description>
     <PackageTags>Repository; UnitOfWork; Specification</PackageTags>
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
 </Project>
