@@ -17,7 +17,6 @@ on:
 env: 
   REGISTRY: nuget.pkg.github.com
   OWNER_NAME: trotsenkosergey
-  DOTNET_VERSION: '8.0.x'
   MATRIX_OBJECTS: ""
 
 jobs:
@@ -111,7 +110,7 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: $DOTNET_VERSION
+          dotnet-version: '8.0.x'
 
       - name: Setup NuGet
         run: >
