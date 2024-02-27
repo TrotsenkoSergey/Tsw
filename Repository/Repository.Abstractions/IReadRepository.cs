@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Tsw.Repository.Abstractions;
+﻿namespace Tsw.Repository.Abstractions;
 
 public interface IReadRepository<TEntity, TId> : IIdUniqueChecker<TEntity, TId>
   where TEntity : class, IIdentifiable<TId>

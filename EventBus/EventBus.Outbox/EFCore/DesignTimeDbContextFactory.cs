@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-
-namespace Tsw.EventBus.Outbox;
+﻿namespace Tsw.EventBus.Outbox;
 
 /// <summary>
 /// Only for creation migrations.
