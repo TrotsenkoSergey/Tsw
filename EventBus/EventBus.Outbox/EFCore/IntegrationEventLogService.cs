@@ -9,7 +9,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
   public IntegrationEventLogService(
     EventLogSettings outboxSettings,
     IntegrationEventLogDbContext context,
-    IOptions<JsonSerializerOptions> jsonSerializerOptions)
+    IOptionsMonitor<JsonSerializerOptions> jsonSerializerOptions)
   {
     _eventTypes = Assembly
         .Load(outboxSettings.AssemblyFullNameWhereIntegrationEventsStore)
@@ -18,7 +18,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
         .ToList();
 
     _context = context;
-    _jsonSerializerOptions = jsonSerializerOptions.Value;
+    _jsonSerializerOptions = jsonSerializerOptions.Get("Outbox.EFCore");
   }
 
   public virtual async Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync()

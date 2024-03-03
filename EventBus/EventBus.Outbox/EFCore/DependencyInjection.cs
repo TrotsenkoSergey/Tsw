@@ -52,7 +52,7 @@ public static class DependencyInjection
     services.AddTransient<IIntegrationEventLogPersistenceTransactional, IntegrationEventLogService>();
     services.AddTransient<IIntegrationEventLogPersistence>(sp => sp.GetRequiredService<IIntegrationEventLogPersistenceTransactional>());
 
-    services.AddOptions<JsonSerializerOptions>()
+    services.AddOptions<JsonSerializerOptions>("Outbox.EFCore")
     .Configure(opt =>
     {
       var encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic);
