@@ -2,5 +2,5 @@
 
 public interface IIntegrationEventOutboxTransactional : IIntegrationEventOutboxService
 {
-  Task AddAndSaveEventWithAsync(DbTransaction currentTransaction, IntegrationEvent evt);
+  Task AddAndSaveEventWithAsync(DbTransaction currentTransaction, params IntegrationEvent[] events);
 }

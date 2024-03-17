@@ -9,5 +9,5 @@ public interface IIntegrationEventLogPersistenceTransactional : IIntegrationEven
   /// <param name="currentTransaction">Specific transaction.</param>
   /// <returns></returns>
   /// <exception cref="ArgumentNullException"></exception>
-  Task SaveEventWithAsync(DbTransaction currentTransaction, IntegrationEvent @event);
+  Task SaveEventWithAsync(DbTransaction currentTransaction, params IntegrationEvent[] events);
 }

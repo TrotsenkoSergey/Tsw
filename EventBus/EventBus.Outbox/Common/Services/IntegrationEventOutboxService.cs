@@ -16,22 +16,22 @@ public class IntegrationEventOutboxService : IIntegrationEventOutboxTransactiona
     _logger = logger;
   }
 
-  public virtual async Task AddAndSaveEventWithAsync(DbTransaction transaction, IntegrationEvent @event)
+  public virtual async Task AddAndSaveEventWithAsync(DbTransaction transaction, params IntegrationEvent[] events)
   {
-    _logger.LogInformation("Enqueuing integration event to repository ({@IntegrationEvent})", @event);
+    _logger.LogInformation("Enqueuing integration events to repository.");
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistenceTransactional>();
-    await eventService.SaveEventWithAsync(transaction, @event);
+    await eventService.SaveEventWithAsync(transaction, events);
 
     await ActivateBackGroundTasksAsync(inJson: true);
   }
 
-  public virtual async Task AddAndSaveEventAsync(IntegrationEvent @event)
+  public virtual async Task AddAndSaveEventAsync(params IntegrationEvent[] events)
   {
-    _logger.LogInformation("Enqueuing integration event to repository ({@IntegrationEvent})", @event);
+    _logger.LogInformation("Enqueuing integration event to repository.");
 
     var eventService = _serviceProvider.GetRequiredService<IIntegrationEventLogPersistence>();
-    await eventService.SaveEventAsync(@event);
+    await eventService.SaveEventAsync(events);
 
     await ActivateBackGroundTasksAsync(inJson: false);
   }

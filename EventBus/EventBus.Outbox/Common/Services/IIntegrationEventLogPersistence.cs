@@ -2,7 +2,7 @@
 
 public interface IIntegrationEventLogPersistence
 {
-  Task SaveEventAsync(IntegrationEvent @event);
+  Task SaveEventAsync(params IntegrationEvent[] events);
   Task<IEnumerable<PublishContent>> GetEventLogsAwaitingToPublishInJsonAsync();
   Task<IEnumerable<IntegrationEventLog>> GetEventLogsAwaitingToPublishAsync();
   Task MarkEventAsPublishedAsync(Guid eventId);
