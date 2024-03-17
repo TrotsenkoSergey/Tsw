@@ -48,7 +48,13 @@ public static class DependencyInjection
   {
     services.AddCommonOutboxServices();
 
-    services.AddSingleton(new EventLogSettings(assemblyFullNameWhereIntegrationEventsStore));
+    var eventTypes = Assembly
+      .Load(assemblyFullNameWhereIntegrationEventsStore)
+      .GetTypes()
+      .Where(t => t.BaseType == typeof(IntegrationEvent))
+      .ToList();
+
+    services.AddSingleton(new EventLogSettings(assemblyFullNameWhereIntegrationEventsStore, eventTypes));
     services.AddTransient<IIntegrationEventLogPersistenceTransactional, IntegrationEventLogService>();
     services.AddTransient<IIntegrationEventLogPersistence>(sp => sp.GetRequiredService<IIntegrationEventLogPersistenceTransactional>());
 
