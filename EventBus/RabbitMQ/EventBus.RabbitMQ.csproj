@@ -4,7 +4,7 @@
     <Title>
       RabbitMQ EventBus implementation.
     </Title>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>8.0.0</PackageVersion>
     <Description>
       Connection with RabbitMQ and pub sub services, logging.
     </Description>
