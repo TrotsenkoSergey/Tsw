@@ -9,8 +9,8 @@ public partial class InMemoryEventBusSubscriptionsManager : IEventBusSubscriptio
 
   public InMemoryEventBusSubscriptionsManager()
   {
-    _handlers = [];
-    _eventTypes = [];
+    _handlers = new();
+    _eventTypes = new();
   }
 
   public bool IsEmpty => _handlers is { Count: 0 };
