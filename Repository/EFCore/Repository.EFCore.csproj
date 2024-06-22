@@ -4,7 +4,7 @@
     <Title>
       EFCore Repository implementation with specification.
     </Title>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>8.0.0</PackageVersion>
     <Description>
       Repository and unit of work Implementation into with EFCore and possibilities of specification.
       Typicaly use with Repository.Abstractions.
