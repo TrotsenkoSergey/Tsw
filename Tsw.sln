@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Common", "EventBus\EventBus.Common\EventBus.Common.csproj", "{012FCD07-F790-4CB1-AE12-7B33BE260E53}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Common", "EventBus\Common\EventBus.Common.csproj", "{012FCD07-F790-4CB1-AE12-7B33BE260E53}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.IntegrationEvents", "EventBus\EventBus.IntegrationEvents\EventBus.IntegrationEvents.csproj", "{A2ED0557-DBC9-4685-8EB6-EB42FA9FCAF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.IntegrationEvents", "EventBus\IntegrationEvents\EventBus.IntegrationEvents.csproj", "{A2ED0557-DBC9-4685-8EB6-EB42FA9FCAF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.RabbitMQ", "EventBus\EventBus.RabbitMQ\EventBus.RabbitMQ.csproj", "{247E3668-CEF4-4001-8370-9259D3259C5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.RabbitMQ", "EventBus\RabbitMQ\EventBus.RabbitMQ.csproj", "{247E3668-CEF4-4001-8370-9259D3259C5E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8751F909-AE18-40A0-96A2-60004F51A002}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,19 +21,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.EFCore", "EventBus\EventBus.Outbox\EFCore\EventBus.Outbox.EFCore.csproj", "{AC69C3AB-C076-4103-9487-9D3F614262C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.EFCore", "EventBus\Outbox\EFCore\EventBus.Outbox.EFCore.csproj", "{AC69C3AB-C076-4103-9487-9D3F614262C2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventBus", "EventBus", "{E4433433-A35F-478C-ACC1-F27EB21E12D6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repository", "Repository", "{61AD432F-3E7D-4000-8E9F-FE8B6B2553C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository.Abstractions", "Repository\Repository.Abstractions\Repository.Abstractions.csproj", "{3554BD5D-DE22-435D-9A3E-A9348A3A66BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository.Abstractions", "Repository\Abstractions\Repository.Abstractions.csproj", "{3554BD5D-DE22-435D-9A3E-A9348A3A66BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository.EFCore", "Repository\Repository.EFCore\Repository.EFCore.csproj", "{49A4F4C0-82B8-456E-B1C9-8645B54011A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository.EFCore", "Repository\EFCore\Repository.EFCore.csproj", "{49A4F4C0-82B8-456E-B1C9-8645B54011A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Common", "EventBus\EventBus.Outbox\Common\EventBus.Outbox.Common.csproj", "{4D8AD4D1-64D9-4E32-B1D0-AA13F0B06384}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Common", "EventBus\Outbox\Common\EventBus.Outbox.Common.csproj", "{4D8AD4D1-64D9-4E32-B1D0-AA13F0B06384}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Marten", "EventBus\EventBus.Outbox\Marten\EventBus.Outbox.Marten.csproj", "{353C989E-ED6C-4651-9808-4585FA871E68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Outbox.Marten", "EventBus\Outbox\Marten\EventBus.Outbox.Marten.csproj", "{353C989E-ED6C-4651-9808-4585FA871E68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
