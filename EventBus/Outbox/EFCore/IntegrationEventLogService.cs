@@ -22,7 +22,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
 
     if (!result.Any())
     {
-      return [];
+      return Enumerable.Empty<IntegrationEventLog>();
     }
 
     return result.OrderBy(e => e.CreatedOnUtc)
@@ -35,7 +35,8 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
 
     if (!result.Any())
     {
-      return [];
+      return Enumerable.Empty<PublishContent>();
+
     }
 
     return result.OrderBy(e => e.CreatedOnUtc)
@@ -59,7 +60,7 @@ public class IntegrationEventLogService : IIntegrationEventLogPersistenceTransac
 
   public virtual Task SaveEventAsync(params IntegrationEvent[] events)
   {
-    List<IntegrationEventLog> integrationEventLogs = [];
+    List<IntegrationEventLog> integrationEventLogs = new();
 
     foreach (var @event in events)
     {
