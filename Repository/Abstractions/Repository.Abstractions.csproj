@@ -4,7 +4,7 @@
     <Title>
       Repository template with specification and unit of work.
     </Title>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>7.0.0</PackageVersion>
     <Description>
       Interfaces and common classes for implementing the repository pattern.
     </Description>
