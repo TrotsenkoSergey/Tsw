@@ -5,14 +5,14 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'EventBus/EventBus.IntegrationEvents/**'
-      - 'EventBus/EventBus.Common/**'
-      - 'EventBus/EventBus.RabbitMQ/**'
-      - 'EventBus/EventBus.Outbox/Common/**'
-      - 'EventBus/EventBus.Outbox/EFCore/**'
-      - 'EventBus/EventBus.Outbox/Marten/**'
-      - 'Repository/Repository.Abstractions/**'
-      - 'Repository/Repository.EFCore/**'
+      - 'EventBus/IntegrationEvents/**'
+      - 'EventBus/Common/**'
+      - 'EventBus/RabbitMQ/**'
+      - 'EventBus/Outbox/Common/**'
+      - 'EventBus/Outbox/EFCore/**'
+      - 'EventBus/Outbox/Marten/**'
+      - 'Repository/Abstractions/**'
+      - 'Repository/EFCore/**'
 
 env: 
   REGISTRY: nuget.pkg.github.com
@@ -35,60 +35,60 @@ jobs:
         id: filter
         with:
           filters: |
-            EventBusIntegrationEvents: [ 'EventBus/EventBus.IntegrationEvents/**' ]
-            EventBusCommon: [ 'EventBus/EventBus.Common/**' ]
-            EventBusRabbitMQ: [ 'EventBus/EventBus.RabbitMQ/**' ]
-            EventBusOutboxCommon: [ 'EventBus/EventBus.Outbox/Common/**' ]  
-            EventBusOutboxEFCore: [ 'EventBus/EventBus.Outbox/EFCore/**' ]  
-            EventBusOutboxMarten: [ 'EventBus/EventBus.Outbox/Marten/**' ]  
-            RepositoryAbstractions: [ 'Repository/Repository.Abstractions/**' ]  
-            RepositoryEFCore: [ 'Repository/Repository.EFCore/**' ]  
+            EventBusIntegrationEvents: [ 'EventBus/IntegrationEvents/**' ]
+            EventBusCommon: [ 'EventBus/Common/**' ]
+            EventBusRabbitMQ: [ 'EventBus/RabbitMQ/**' ]
+            EventBusOutboxCommon: [ 'EventBus/Outbox/Common/**' ]  
+            EventBusOutboxEFCore: [ 'EventBus/Outbox/EFCore/**' ]  
+            EventBusOutboxMarten: [ 'EventBus/Outbox/Marten/**' ]  
+            RepositoryAbstractions: [ 'Repository/Abstractions/**' ]  
+            RepositoryEFCore: [ 'Repository/EFCore/**' ]  
 
       - if: steps.filter.outputs.EventBusIntegrationEvents == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.IntegrationEvents
+            REPO_PATH=./EventBus/IntegrationEvents
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.EventBusCommon == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.Common
+            REPO_PATH=./EventBus/Common
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.EventBusRabbitMQ == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.RabbitMQ
+            REPO_PATH=./EventBus/RabbitMQ
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.EventBusOutboxCommon == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.Outbox/Common
+            REPO_PATH=./EventBus/Outbox/Common
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.EventBusOutboxEFCore == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.Outbox/EFCore
+            REPO_PATH=./EventBus/Outbox/EFCore
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.EventBusOutboxMarten == 'true'
         run: |
-            REPO_PATH=./EventBus/EventBus.Outbox/Marten
+            REPO_PATH=./EventBus/Outbox/Marten
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.RepositoryAbstractions == 'true'
         run: |
-            REPO_PATH=./Repository/Repository.Abstractions
+            REPO_PATH=./Repository/Abstractions
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
       - if: steps.filter.outputs.RepositoryEFCore == 'true'
         run: |
-            REPO_PATH=./Repository/Repository.EFCore
+            REPO_PATH=./Repository/EFCore
             ([ -n "$MATRIX_OBJECTS" ]) && OBJECTS=$MATRIX_OBJECTS,
             echo "MATRIX_OBJECTS=$OBJECTS{\"repopath\":\"$REPO_PATH\"}" >> $GITHUB_ENV
 
