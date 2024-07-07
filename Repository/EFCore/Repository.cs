@@ -45,10 +45,10 @@ public class Repository<TEntity, TId> : IRepository<TEntity, TId>
   {
     IQueryable<TEntity> query = GetQuery(noTracking);// order is important!
 
+    query = specification.ApplyToTable(query);
+
     query = specification.Includes.Aggregate(query, (current, include) => current.Include(include));
     query = specification.ThenIncludes.Aggregate(query, (current, include) => current.Include(include));
-
-    query = specification.ApplyToTable(query);
 
     if (specification.OrderByAsc is not null)
     {
