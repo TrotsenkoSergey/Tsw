@@ -22,7 +22,7 @@ env:
 jobs:
   prepare-matrix:
     name: Matrix preparation for next job
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
@@ -116,7 +116,7 @@ jobs:
         run: >
           dotnet nuget add source https://$REGISTRY/$OWNER_NAME/index.json 
           --name github --username $OWNER_NAME 
-          --password "${{ secrets.NUGET_API_KEY }}" --store-password-in-clear-text
+          --password "${{ secrets.RW_NUGET_TSW }}" --store-password-in-clear-text
 
       - name: Restore
         run: dotnet restore ${{ matrix.repopath }}
@@ -131,4 +131,4 @@ jobs:
         run: >
           dotnet nuget push *.nupkg 
           --source https://$REGISTRY/$OWNER_NAME/index.json 
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          --api-key ${{ secrets.RW_NUGET_TSW }}
